@@ -458,7 +458,119 @@ button{ touch-action:manipulation; }
   .wax-seal{ width:76px;height:76px; }
 }
 
-/* ——— FONT PICKER ——— */
+/* ——— THEME: NIGHT ——— */
+html[data-theme="night"]{
+  --cream:       #161C12;
+  --paper:       #1C2318;
+  --paper2:      #20281C;
+  --forest:      #6AAE6E;
+  --forest-mid:  #88C88C;
+  --forest-pale: #2A4028;
+  --bark:        #C49568;
+  --bark-light:  #D4A878;
+  --fig:         #C090B0;
+  --fig-light:   #6A3858;
+  --gold:        #C8A040;
+  --gold-light:  #A88020;
+  --ink:         #DDD8CC;
+  --ink-mid:     #BDBCB0;
+  --ink-light:   #9D9888;
+  --red-seal:    #8B1A1A;
+}
+html[data-theme="night"] body::before{
+  background-image:
+    radial-gradient(ellipse 80% 60% at 10% 15%, rgba(106,174,110,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 90% 80%, rgba(192,144,176,0.05) 0%, transparent 60%);
+}
+html[data-theme="night"] .daily-quote{
+  background:linear-gradient(135deg,rgba(106,174,110,0.08),rgba(192,144,176,0.06));
+}
+html[data-theme="night"] .font-btn{ background:var(--paper); }
+
+/* ——— THEME: SEPIA ——— */
+html[data-theme="sepia"]{
+  --cream:       #F0E6C8;
+  --paper:       #E8D8B0;
+  --paper2:      #F4EDD8;
+  --forest:      #7A6040;
+  --forest-mid:  #9A7850;
+  --forest-pale: #C8A870;
+  --bark:        #8B3818;
+  --bark-light:  #A85830;
+  --fig:         #783048;
+  --fig-light:   #D0A898;
+  --gold:        #A87820;
+  --gold-light:  #C89840;
+  --ink:         #281408;
+  --ink-mid:     #48200E;
+  --ink-light:   #6A4028;
+  --red-seal:    #8B1A1A;
+}
+html[data-theme="sepia"] body::before{
+  background-image:
+    radial-gradient(ellipse 80% 60% at 10% 15%, rgba(122,96,64,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 90% 80%, rgba(120,48,72,0.06) 0%, transparent 60%);
+}
+html[data-theme="sepia"] .daily-quote{
+  background:linear-gradient(135deg,rgba(122,96,64,0.08),rgba(120,48,72,0.06));
+  border-color:rgba(122,96,64,0.2);
+}
+html[data-theme="sepia"] .font-btn{ background:var(--cream); }
+
+/* ——— TRANSITIONS ——— */
+body, .paper-card, .daily-quote, .nav,
+.header, .prompt-display, .journal-textarea,
+.letter-input, .prompt-card, .arch-entry,
+.font-btn, .cat-pill, .mood-btn,
+.letter-suggest-box, .modal-box{
+  transition:
+    background-color 0.45s ease,
+    background 0.45s ease,
+    color 0.45s ease,
+    border-color 0.45s ease,
+    box-shadow 0.45s ease;
+}
+
+/* ——— THEME SWITCHER (floating) ——— */
+.theme-switcher{
+  position:fixed;top:1.1rem;right:1.1rem;
+  display:flex;flex-direction:column;gap:0.45rem;
+  z-index:90;
+}
+.theme-dot{
+  width:32px;height:32px;border-radius:50%;
+  border:2px solid transparent;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.95rem;
+  box-shadow:0 2px 8px rgba(0,0,0,0.15);
+  transition:all 0.25s;
+  position:relative;
+}
+.theme-dot:hover{ transform:scale(1.15); }
+.theme-dot.active{
+  border-color:var(--gold);
+  box-shadow:0 0 0 3px rgba(192,144,48,0.25), 0 2px 8px rgba(0,0,0,0.15);
+}
+.theme-dot[data-theme="daylight"]{ background:#F7F2E3; }
+.theme-dot[data-theme="sepia"]   { background:#E8D8B0; }
+.theme-dot[data-theme="night"]   { background:#1C2318; }
+.theme-dot-tip{
+  position:absolute;right:calc(100% + 8px);top:50%;
+  transform:translateY(-50%);
+  background:var(--ink);color:var(--cream);
+  font-family:'Dancing Script',cursive;font-size:0.78rem;
+  padding:0.2rem 0.6rem;border-radius:10px;
+  white-space:nowrap;opacity:0;pointer-events:none;
+  transition:opacity 0.2s;
+}
+.theme-dot:hover .theme-dot-tip{ opacity:1; }
+@media(max-width:600px){
+  .theme-switcher{ top:0.7rem;right:0.7rem; }
+  .theme-dot{ width:26px;height:26px;font-size:0.75rem; }
+}
+
+
 .font-picker{
   display:flex;gap:0.45rem;flex-wrap:wrap;
   margin-bottom:1rem;align-items:center;
@@ -510,6 +622,19 @@ button{ touch-action:manipulation; }
 <body>
 
 <div id="bg-botanicals"></div>
+
+<!-- THEME SWITCHER -->
+<div class="theme-switcher">
+  <button class="theme-dot active" data-theme="daylight" onclick="setTheme('daylight')" title="Daylight">
+    ☀️<span class="theme-dot-tip">Daylight</span>
+  </button>
+  <button class="theme-dot" data-theme="sepia" onclick="setTheme('sepia')" title="Sepia">
+    📜<span class="theme-dot-tip">Sepia</span>
+  </button>
+  <button class="theme-dot" data-theme="night" onclick="setTheme('night')" title="Night">
+    🌙<span class="theme-dot-tip">Night</span>
+  </button>
+</div>
 
 <div class="app">
 
@@ -803,6 +928,7 @@ const LS = {
   DRAFT:    'langoor-journal-draft',
   LETTER:   'langoor-letter-draft',
   FONT:     'langoor-font',
+  THEME:    'langoor-theme',
 };
 
 function persistEntries(){
@@ -826,6 +952,10 @@ function persistLetter(){
 // INIT
 // ═══════════════════════════════════════
 function init(){
+  // ── Restore theme first (before paint) ──
+  const savedTheme = localStorage.getItem(LS.THEME)||'daylight';
+  setTheme(savedTheme, false);
+
   const now=new Date();
   document.getElementById('headerDate').textContent=
     now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}).toUpperCase();
@@ -1014,6 +1144,17 @@ function usePrompt(text){
   switchTab('journal');
   setTimeout(()=>document.getElementById('journalText').focus(),350);
   toast('🌿 Prompt ready — start writing!');
+}
+
+// ═══════════════════════════════════════
+// THEME SWITCHER
+// ═══════════════════════════════════════
+function setTheme(name, save=true){
+  document.documentElement.setAttribute('data-theme', name==='daylight' ? '' : name);
+  document.querySelectorAll('.theme-dot').forEach(b=>{
+    b.classList.toggle('active', b.dataset.theme===name);
+  });
+  if(save) try{ localStorage.setItem(LS.THEME, name); }catch(e){}
 }
 
 // ═══════════════════════════════════════
