@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Langoor Dairies — Scribbles from the Treetops</title>
+<title>Langooric Scriptures — Scribbles from the Treetops</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400;1,500&family=Dancing+Script:wght@400;600;700&family=Special+Elite&family=IM+Fell+English:ital@0;1&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Courier+Prime:ital@0;1&display=swap" rel="stylesheet">
 <style>
@@ -387,15 +387,75 @@ body::before{
 }
 .toast.show{transform:translateX(-50%) translateY(0);}
 
-/* ——— STREAK ——— */
-.streak-badge{
-  display:inline-flex;align-items:center;gap:0.4rem;
-  padding:0.3rem 0.8rem;
-  background:rgba(46,94,48,0.1);
-  border:1px solid rgba(46,94,48,0.25);
-  border-radius:20px;
-  font-family:'Dancing Script',cursive;font-size:0.88rem;color:var(--forest);
+/* ——— STREAK WIDGET ——— */
+.streak-widget{
+  display:flex;align-items:center;gap:0;
   margin-left:auto;
+  background:rgba(46,94,48,0.08);
+  border:1px solid rgba(46,94,48,0.2);
+  border-radius:20px;overflow:hidden;
+}
+.streak-item{
+  display:flex;flex-direction:column;
+  align-items:center;padding:0.3rem 0.75rem;
+  line-height:1.2;
+}
+.streak-num{
+  font-family:'Playfair Display',serif;
+  font-size:1rem;font-weight:600;
+  color:var(--forest);
+}
+.streak-lbl{
+  font-family:'Dancing Script',cursive;
+  font-size:0.68rem;color:var(--ink-light);
+  white-space:nowrap;
+}
+.streak-divider{
+  width:1px;height:30px;
+  background:rgba(46,94,48,0.2);
+  flex-shrink:0;
+}
+
+/* ——— MILESTONE BURST ——— */
+@keyframes burstIn{
+  0%{transform:translateX(-50%) scale(0.5) translateY(20px);opacity:0;}
+  60%{transform:translateX(-50%) scale(1.08) translateY(-4px);opacity:1;}
+  100%{transform:translateX(-50%) scale(1) translateY(0);opacity:1;}
+}
+.milestone-toast{
+  position:fixed;top:2rem;left:50%;
+  transform:translateX(-50%) translateY(-80px);
+  background:linear-gradient(135deg,var(--forest),var(--forest-mid));
+  color:var(--cream);padding:1rem 2rem;
+  border-radius:2px;text-align:center;
+  font-family:'Dancing Script',cursive;
+  box-shadow:0 8px 30px rgba(46,94,48,0.35);
+  z-index:200;opacity:0;pointer-events:none;
+  transition:opacity 0.3s;
+}
+.milestone-toast.show{
+  opacity:1;
+  animation:burstIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+.milestone-emoji{font-size:1.8rem;display:block;margin-bottom:0.2rem;}
+.milestone-msg{font-size:1.1rem;display:block;}
+.milestone-sub{font-size:0.8rem;opacity:0.8;display:block;margin-top:0.1rem;font-family:'Lora',serif;font-style:italic;}
+
+/* ——— MOBILE IMPROVEMENTS ——— */
+button{ touch-action:manipulation; }
+@media(max-width:600px){
+  .mood-row{ gap:0.3rem; }
+  .streak-widget{ margin-left:0;margin-top:0.5rem;width:100%; }
+  .streak-item{ flex:1; }
+  .font-picker{ overflow-x:auto;flex-wrap:nowrap;padding-bottom:0.3rem; }
+  .font-picker::-webkit-scrollbar{ height:2px; }
+  .font-picker::-webkit-scrollbar-thumb{ background:var(--forest-pale);border-radius:2px; }
+  .nav-btn{ padding:0.7rem 0.9rem;font-size:0.82rem; }
+  .paper-card{ padding:1.4rem 1.2rem; }
+  .btn-primary,.btn-ghost{ padding:0.75rem 1.2rem;min-height:44px; }
+  .mood-btn{ width:40px;height:40px;font-size:1.3rem; }
+  .prompt-grid{ grid-template-columns:1fr; }
+  .wax-seal{ width:76px;height:76px; }
 }
 
 /* ——— FONT PICKER ——— */
@@ -456,7 +516,7 @@ body::before{
   <!-- HEADER -->
   <header class="header">
     <div class="header-vine">🌿 &nbsp; 🌿 &nbsp; 🌿</div>
-    <h1 class="header-title"><span>Langoor</span> Dairies</h1>
+    <h1 class="header-title"><span>Langooric</span> Scriptures</h1>
     <p class="header-sub">scribbles from the treetops</p>
     <p class="header-date" id="headerDate"></p>
     <div class="vine-divider">〰 〰 〰</div>
@@ -492,7 +552,22 @@ body::before{
         <button class="mood-btn" data-mood="🌙" onclick="pickMood(this)" title="Reflective">🌙</button>
         <button class="mood-btn" data-mood="☁️" onclick="pickMood(this)" title="Dreamy">☁️</button>
         <button class="mood-btn" data-mood="🔥" onclick="pickMood(this)" title="Fierce">🔥</button>
-        <div class="streak-badge" id="streakBadge">🌿 0 entries</div>
+        <div class="streak-widget" id="streakWidget">
+          <div class="streak-item">
+            <span class="streak-num" id="streakCurrent">0</span>
+            <span class="streak-lbl">streak 🔥</span>
+          </div>
+          <div class="streak-divider"></div>
+          <div class="streak-item">
+            <span class="streak-num" id="streakBest">0</span>
+            <span class="streak-lbl">best 🏆</span>
+          </div>
+          <div class="streak-divider"></div>
+          <div class="streak-item">
+            <span class="streak-num" id="streakTotal">0</span>
+            <span class="streak-lbl">entries 📖</span>
+          </div>
+        </div>
       </div>
 
       <div class="paper-card paper-card-2">
@@ -520,7 +595,7 @@ body::before{
         <div class="word-count" id="jwc">0 words</div>
 
         <div class="btn-row">
-          <button class="btn-primary" onclick="saveEntry()">Save to Dairies</button>
+          <button class="btn-primary" onclick="saveEntry()">Save to Scriptures</button>
           <button class="btn-ghost" onclick="clearJournal()">Clear</button>
           <button class="btn-ghost" onclick="downloadJournal()">⬇ Download</button>
         </div>
@@ -617,6 +692,13 @@ body::before{
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+
+<!-- MILESTONE TOAST -->
+<div class="milestone-toast" id="milestonePop">
+  <span class="milestone-emoji" id="milestoneEmoji"></span>
+  <span class="milestone-msg"  id="milestoneMsg"></span>
+  <span class="milestone-sub"  id="milestoneSub"></span>
+</div>
 
 <script>
 // ═══════════════════════════════════════
@@ -757,7 +839,7 @@ function init(){
 
   // ── Restore entries ──
   try{ entries=JSON.parse(localStorage.getItem(LS.ENTRIES)||'[]'); }catch(e){ entries=[]; }
-  updateStreak();
+  updateStats();
 
   // ── Restore in-progress journal draft ──
   const savedDraft = localStorage.getItem(LS.DRAFT)||'';
@@ -792,9 +874,78 @@ function init(){
   document.getElementById('lSubject').addEventListener('input', persistLetter);
 }
 
-function updateStreak(){
-  document.getElementById('streakBadge').textContent=
-    '🌿 '+entries.length+(entries.length===1?' entry':' entries');
+// ═══════════════════════════════════════
+// STREAK CALCULATION
+// ═══════════════════════════════════════
+const MILESTONES = [3,7,14,21,30,50,100];
+
+function dayKey(ts){
+  const d = new Date(ts);
+  return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+}
+
+function calcStreak(){
+  if(!entries.length) return {current:0, best:0};
+
+  // Unique sorted day keys, newest first
+  const days = [...new Set(entries.map(e=>dayKey(e.ts)))].sort().reverse();
+
+  const todayKey    = dayKey(Date.now());
+  const yestKey     = dayKey(Date.now()-86400000);
+
+  // Streak must include today or yesterday to be "active"
+  if(days[0]!==todayKey && days[0]!==yestKey) return {current:0, best:calcBest(days)};
+
+  let current=1;
+  for(let i=1;i<days.length;i++){
+    const a=new Date(days[i-1]), b=new Date(days[i]);
+    if((a-b)===86400000) current++;
+    else break;
+  }
+  return {current, best:Math.max(current, calcBest(days))};
+}
+
+function calcBest(days){
+  if(!days.length) return 0;
+  let best=1, cur=1;
+  for(let i=1;i<days.length;i++){
+    const a=new Date(days[i-1]), b=new Date(days[i]);
+    if((a-b)===86400000){ cur++; if(cur>best) best=cur; }
+    else cur=1;
+  }
+  return best;
+}
+
+function updateStats(prevStreak){
+  const {current, best} = calcStreak();
+  document.getElementById('streakCurrent').textContent = current;
+  document.getElementById('streakBest').textContent    = best;
+  document.getElementById('streakTotal').textContent   = entries.length;
+
+  // Milestone celebration
+  if(prevStreak!==undefined && current > prevStreak && MILESTONES.includes(current)){
+    celebrateMilestone(current);
+  }
+  return current;
+}
+
+function celebrateMilestone(days){
+  const msgs = {
+    3:  ['🌱','Three days strong!','The roots are taking hold.'],
+    7:  ['🌿','One whole week!','You showed up every single day.'],
+    14: ['🌳','Two weeks of writing!','You\'re growing into something beautiful.'],
+    21: ['🌺','21 days! A habit is born.','This is who you are now.'],
+    30: ['🔥','A whole month!','You are truly a scribe of the treetops.'],
+    50: ['⭐','50 days of words!','The pages remember everything.'],
+   100: ['🏆','One hundred days.','Langooric legend. The forest applauds.'],
+  };
+  const [emoji, msg, sub] = msgs[days]||['✨',days+' day streak!','Keep going.'];
+  document.getElementById('milestoneEmoji').textContent = emoji;
+  document.getElementById('milestoneMsg').textContent   = msg;
+  document.getElementById('milestoneSub').textContent   = sub;
+  const el = document.getElementById('milestonePop');
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 4200);
 }
 
 // ═══════════════════════════════════════
@@ -912,15 +1063,16 @@ function countWords(srcId,outId){
 function saveEntry(){
   const text=document.getElementById('journalText').value.trim();
   if(!text){toast('✏️ Write something first!');return;}
+  const prevStreak = calcStreak().current;
   entries.unshift({
     date:new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}),
     prompt:document.getElementById('journalPrompt').textContent,
-    text,mood,ts:Date.now()
+    text, mood, ts:Date.now()
   });
   persistEntries();
   try{ localStorage.removeItem(LS.DRAFT); }catch(e){}
-  updateStreak();
-  toast('🌿 Entry saved to your Dairies!');
+  updateStats(prevStreak);
+  toast('🌿 Entry saved to your Scriptures!');
 }
 
 function clearJournal(){
@@ -935,7 +1087,7 @@ function downloadJournal(){
   if(!text){toast('✏️ Nothing to download yet.');return;}
   const prompt=document.getElementById('journalPrompt').textContent;
   const date=new Date().toLocaleDateString();
-  dl('Langoor Dairies — Entry\n'+date+'\n\nPrompt:\n'+prompt+'\n\n'+text,'langoor-entry-'+Date.now()+'.txt');
+  dl('Langooric Scriptures — Entry\n'+date+'\n\nPrompt:\n'+prompt+'\n\n'+text,'langooric-entry-'+Date.now()+'.txt');
   toast('⬇ Entry downloaded!');
 }
 
@@ -967,7 +1119,7 @@ function deleteEntry(event,i){
   if(!confirm('Delete this entry? This cannot be undone.'))return;
   entries.splice(i,1);
   persistEntries();
-  updateStreak();
+  updateStats();
   renderArchive();
   toast('🍂 Entry removed.');
 }
@@ -1027,7 +1179,7 @@ function downloadLetter(){
   const from=document.getElementById('lFrom').value||'';
   const subject=document.getElementById('lSubject').value||'A Letter';
   const date=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  dl('Langoor Dairies — Letter\n'+date+'\n\nTo: '+to+'\nSubject: '+subject+'\n\n'+body+'\n\n'+(from?'— '+from:''),'langoor-letter-'+Date.now()+'.txt');
+  dl('Langooric Scriptures — Letter\n'+date+'\n\nTo: '+to+'\nSubject: '+subject+'\n\n'+body+'\n\n'+(from?'— '+from:''),'langooric-letter-'+Date.now()+'.txt');
   toast('⬇ Letter saved!');
 }
 
