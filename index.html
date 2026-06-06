@@ -571,6 +571,20 @@ body, .paper-card, .daily-quote, .nav,
 }
 
 
+/* ——— SEASONAL BADGE ——— */
+.seasonal-badge{
+  font-family:'Dancing Script',cursive;
+  font-size:0.82rem;color:var(--bark-light);
+  margin-top:0.2rem;opacity:0.7;
+  letter-spacing:0.06em;
+  transition:color 0.45s;
+}
+html[data-season="autumn"] .float-leaf{ animation-timing-function:cubic-bezier(0.45,0,0.55,1); }
+html[data-season="winter"] .float-leaf{ filter:saturate(0.3) opacity(0.28); }
+html[data-season="spring"] .float-leaf{ filter:saturate(0.9) opacity(0.28); }
+html[data-season="summer"] .float-leaf{ filter:saturate(0.6) opacity(0.22); }
+
+/* ——— FONT PICKER ——— */
 .font-picker{
   display:flex;gap:0.45rem;flex-wrap:wrap;
   margin-bottom:1rem;align-items:center;
@@ -622,6 +636,7 @@ body, .paper-card, .daily-quote, .nav,
 <body>
 
 <div id="bg-botanicals"></div>
+<div id="seasonal-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;transition:background 1.5s ease;"></div>
 
 <!-- THEME SWITCHER -->
 <div class="theme-switcher">
@@ -644,6 +659,7 @@ body, .paper-card, .daily-quote, .nav,
     <h1 class="header-title"><span>Langooric</span> Scriptures</h1>
     <p class="header-sub">scribbles from the treetops</p>
     <p class="header-date" id="headerDate"></p>
+    <p class="seasonal-badge" id="seasonalBadge"></p>
     <div class="vine-divider">〰 〰 〰</div>
   </header>
 
@@ -913,7 +929,52 @@ const CAT_META = {
   letters:{label:'✉ Letters'},
 };
 
-const FLOATS = ['🌿','🍃','🌴','🌺','🌸','🍂','🌾','🍀','🌼','🎋','🌱'];
+// ═══════════════════════════════════════
+// SEASONS
+// ═══════════════════════════════════════
+// Based on South Asian (Punjab) seasonal calendar
+const SEASONS = {
+  spring: {
+    label: '🌸 Spring',
+    floats: ['🌸','🌺','🌷','🌼','🦋','🌱','🌸','🌹','🍀','🌸','🌺','🌻'],
+    speed: [10, 14],   // fast & light
+    size:  [0.7, 1.4],
+    count: 20,
+    overlay: 'radial-gradient(ellipse 70% 50% at 30% 5%, rgba(255,182,193,0.1) 0%,transparent 60%), radial-gradient(ellipse 50% 40% at 80% 95%, rgba(144,238,144,0.07) 0%,transparent 50%)',
+  },
+  summer: {
+    label: '☀️ Summer',
+    floats: ['🌻','🌴','🌿','🍃','🌺','🌾','🎋','🌵','🌼','🌿','🍃','🌴'],
+    speed: [18, 22],   // slow & lush
+    size:  [1.0, 2.0],
+    count: 14,
+    overlay: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,210,0,0.07) 0%,transparent 55%), radial-gradient(ellipse 60% 50% at 10% 80%, rgba(34,139,34,0.07) 0%,transparent 50%)',
+  },
+  autumn: {
+    label: '🍂 Autumn',
+    floats: ['🍂','🍁','🍃','🌾','🍄','🍂','🍁','🌿','🍂','🍁','🌾','🍃'],
+    speed: [7, 20],    // variable — some drift, some tumble
+    size:  [0.8, 1.8],
+    count: 22,
+    overlay: 'radial-gradient(ellipse 70% 50% at 60% 0%, rgba(205,133,63,0.11) 0%,transparent 60%), radial-gradient(ellipse 50% 40% at 90% 70%, rgba(178,34,34,0.07) 0%,transparent 50%)',
+  },
+  winter: {
+    label: '❄️ Winter',
+    floats: ['❄️','✨','💫','⭐','🌟','🌙','❄️','🌨️','✨','❄️','💫','⭐'],
+    speed: [20, 28],   // very slow drift
+    size:  [0.5, 1.1],
+    count: 12,
+    overlay: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(173,216,230,0.1) 0%,transparent 60%), radial-gradient(ellipse 60% 50% at 30% 100%, rgba(176,196,222,0.09) 0%,transparent 50%)',
+  },
+};
+
+function getSeason(){
+  const m = new Date().getMonth() + 1; // 1–12
+  if(m >= 2 && m <= 4) return 'spring';
+  if(m >= 5 && m <= 8) return 'summer';
+  if(m >= 9 && m <= 11) return 'autumn';
+  return 'winter';
+}
 
 // ═══════════════════════════════════════
 // STATE
@@ -1079,18 +1140,32 @@ function celebrateMilestone(days){
 }
 
 // ═══════════════════════════════════════
-// BOTANICALS
+// BOTANICALS (SEASONAL)
 // ═══════════════════════════════════════
 function spawnBotanicals(){
-  const wrap=document.getElementById('bg-botanicals');
-  for(let i=0;i<16;i++){
-    const el=document.createElement('div');
-    el.className='float-leaf';
-    el.textContent=FLOATS[Math.floor(Math.random()*FLOATS.length)];
-    el.style.left=Math.random()*100+'%';
-    el.style.fontSize=(0.8+Math.random()*2.2)+'rem';
-    el.style.animationDuration=(12+Math.random()*30)+'s';
-    el.style.animationDelay=(-Math.random()*35)+'s';
+  const season = getSeason();
+  const s      = SEASONS[season];
+  const wrap   = document.getElementById('bg-botanicals');
+  wrap.innerHTML = '';
+
+  // Set seasonal overlay gradient
+  document.getElementById('seasonal-overlay').style.background = s.overlay;
+
+  // Set season attribute for CSS tweaks
+  document.documentElement.setAttribute('data-season', season);
+
+  // Set seasonal badge in header
+  document.getElementById('seasonalBadge').textContent = s.label;
+
+  // Spawn floats
+  for(let i = 0; i < s.count; i++){
+    const el = document.createElement('div');
+    el.className = 'float-leaf';
+    el.textContent = s.floats[Math.floor(Math.random() * s.floats.length)];
+    el.style.left   = Math.random() * 100 + '%';
+    el.style.fontSize = (s.size[0] + Math.random() * s.size[1]) + 'rem';
+    el.style.animationDuration = (s.speed[0] + Math.random() * s.speed[1]) + 's';
+    el.style.animationDelay    = (-Math.random() * 42) + 's';
     wrap.appendChild(el);
   }
 }
