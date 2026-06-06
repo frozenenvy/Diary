@@ -224,8 +224,30 @@ body::before{
   font-family:'Lora',serif;font-size:0.97rem;
   color:var(--ink);line-height:1.95;
   resize:vertical;outline:none;padding:0.8rem 0;
+  caret-color:var(--forest);
+  position:relative;z-index:1;
 }
 .journal-textarea::placeholder{color:rgba(122,88,40,0.35);font-style:italic;}
+
+/* ink wrapper — holds canvas + textarea */
+.ink-wrap{ position:relative; }
+#inkCanvas{
+  position:absolute;top:0;left:0;
+  width:100%;height:100%;
+  pointer-events:none;z-index:2;
+  border-radius:inherit;
+}
+
+/* left-stripe pulse while writing */
+@keyframes inkPulse{
+  0%,100%{ opacity:1; background:linear-gradient(to bottom,var(--forest-pale),var(--fig-light),var(--gold-light)); }
+  50%    { opacity:0.6; background:linear-gradient(to bottom,var(--forest-mid),var(--fig),var(--gold)); }
+}
+.paper-card:focus-within::before{
+  animation:inkPulse 2.4s ease-in-out infinite;
+}
+
+
 .lined{
   background-image:repeating-linear-gradient(
     transparent,transparent calc(1.95em - 1px),
@@ -320,6 +342,98 @@ body::before{
   margin-top:0.3rem;cursor:pointer;line-height:1.5;transition:color 0.2s;
 }
 .lsb-text:hover{color:var(--forest);}
+
+/* ——— LETTER TEMPLATES ——— */
+.templates-toggle{
+  background:none;border:none;cursor:pointer;
+  font-family:'Dancing Script',cursive;
+  font-size:0.92rem;color:var(--forest-mid);
+  padding:0;letter-spacing:0.02em;
+  transition:color 0.2s;
+  display:block;margin-bottom:0.7rem;
+}
+.templates-toggle:hover{ color:var(--forest); }
+.templates-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:0.55rem;margin-bottom:0.5rem;
+  animation:sectionIn 0.3s ease;
+}
+.template-card{
+  background:var(--cream);
+  border:1px solid rgba(46,94,48,0.15);
+  border-radius:1px;padding:0.7rem 0.8rem;
+  cursor:pointer;transition:all 0.2s;
+  text-align:left;
+}
+.template-card:hover{
+  border-color:var(--forest);
+  background:rgba(46,94,48,0.04);
+  transform:translateY(-2px);
+  box-shadow:0 4px 12px rgba(46,94,48,0.1);
+}
+.tc-icon{ font-size:1.3rem;display:block;margin-bottom:0.3rem; }
+.tc-name{
+  font-family:'Lora',serif;font-size:0.78rem;
+  color:var(--ink);display:block;line-height:1.3;
+}
+
+/* ——— DRAFTS PANEL ——— */
+.drafts-header{
+  display:flex;align-items:center;gap:0.6rem;
+  padding:0.65rem 1rem;
+  background:var(--paper);
+  border:1px solid rgba(46,94,48,0.15);
+  border-radius:1px;cursor:pointer;
+  transition:background 0.2s;
+  user-select:none;
+}
+.drafts-header:hover{ background:rgba(46,94,48,0.05); }
+.drafts-title{
+  font-family:'Dancing Script',cursive;
+  font-size:0.95rem;color:var(--forest);
+}
+.drafts-count{
+  font-family:'Lora',serif;font-size:0.72rem;
+  background:var(--forest);color:white;
+  border-radius:10px;padding:0.05rem 0.45rem;
+  letter-spacing:0.04em;
+}
+.drafts-list{
+  border:1px solid rgba(46,94,48,0.15);
+  border-top:none;
+  background:var(--paper2);
+  padding:0.4rem;
+  display:flex;flex-direction:column;gap:0.4rem;
+}
+.draft-card{
+  display:flex;align-items:center;gap:0.6rem;
+  padding:0.6rem 0.8rem;
+  background:var(--paper);
+  border:1px solid rgba(46,94,48,0.12);
+  border-radius:1px;cursor:pointer;
+  transition:all 0.18s;
+}
+.draft-card:hover{
+  border-color:var(--forest);
+  box-shadow:0 2px 8px rgba(46,94,48,0.1);
+}
+.draft-name{
+  font-family:'Lora',serif;font-size:0.85rem;
+  color:var(--ink);flex:1;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.draft-meta{
+  font-family:'Dancing Script',cursive;
+  font-size:0.75rem;color:var(--ink-light);
+  white-space:nowrap;
+}
+.draft-del{
+  background:none;border:none;cursor:pointer;
+  color:var(--ink-light);opacity:0.4;font-size:0.9rem;
+  padding:0.1rem 0.3rem;transition:opacity 0.2s;flex-shrink:0;
+}
+.draft-del:hover{ opacity:1;color:var(--bark); }
 
 /* ——— WAX SEAL ——— */
 .seal-wrap{text-align:center;margin-top:2rem;}
@@ -440,6 +554,62 @@ body::before{
 .milestone-emoji{font-size:1.8rem;display:block;margin-bottom:0.2rem;}
 .milestone-msg{font-size:1.1rem;display:block;}
 .milestone-sub{font-size:0.8rem;opacity:0.8;display:block;margin-top:0.1rem;font-family:'Lora',serif;font-style:italic;}
+
+/* ——— MOOD CHART ——— */
+.mood-chart-toggle{
+  background:var(--paper);border:1px solid rgba(46,94,48,0.18);
+  border-radius:1px;padding:0.6rem 1rem;
+  font-family:'Dancing Script',cursive;font-size:0.95rem;
+  color:var(--forest);cursor:pointer;width:100%;text-align:left;
+  transition:all 0.2s;margin-bottom:0;display:flex;align-items:center;gap:0.5rem;
+}
+.mood-chart-toggle:hover{ background:rgba(46,94,48,0.05); }
+.mood-chart-wrap{
+  background:var(--paper);
+  border:1px solid rgba(46,94,48,0.15);border-top:none;
+  padding:1.2rem 1.4rem;animation:sectionIn 0.3s ease;
+}
+.mc-label{
+  font-family:'Dancing Script',cursive;font-size:0.8rem;
+  color:var(--ink-light);letter-spacing:0.06em;
+  text-transform:uppercase;margin-bottom:0.7rem;display:block;
+}
+.mc-timeline{
+  display:flex;flex-wrap:wrap;gap:0.35rem;margin-bottom:0.4rem;
+}
+.mc-bubble{
+  display:flex;flex-direction:column;align-items:center;
+  gap:0.05rem;
+}
+.mc-emoji{ font-size:1.15rem;line-height:1; }
+.mc-day{
+  font-family:'Dancing Script',cursive;font-size:0.6rem;
+  color:var(--ink-light);opacity:0.65;
+}
+.mc-bars{ display:flex;flex-direction:column;gap:0.5rem;margin-top:0.4rem; }
+.mc-bar-row{ display:flex;align-items:center;gap:0.7rem; }
+.mc-bar-emoji{ font-size:1rem;width:1.4rem;text-align:center;flex-shrink:0; }
+.mc-bar-track{
+  flex:1;height:7px;background:rgba(46,94,48,0.1);
+  border-radius:4px;overflow:hidden;
+}
+.mc-bar-fill{
+  height:100%;border-radius:4px;
+  background:linear-gradient(to right,var(--forest-pale),var(--forest));
+  transition:width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+}
+.mc-count{
+  font-family:'Lora',serif;font-size:0.72rem;
+  color:var(--ink-light);min-width:1.4rem;text-align:right;
+}
+.mc-empty{
+  text-align:center;font-style:italic;
+  color:var(--ink-light);opacity:0.55;font-size:0.88rem;padding:0.8rem 0;
+}
+.mc-divider{
+  border:none;border-top:1px solid rgba(46,94,48,0.12);
+  margin:1rem 0;
+}
 
 /* ——— MOBILE IMPROVEMENTS ——— */
 button{ touch-action:manipulation; }
@@ -766,8 +936,26 @@ html[data-season="summer"] .float-leaf{ filter:saturate(0.6) opacity(0.22); }
       <p class="s-title">Write a Letter</p>
       <p class="s-desc">Even langoors know — some messages deserve to travel farther than a shout between branches.</p>
 
+      <!-- Saved Drafts Panel -->
+      <div id="draftsPanel" style="display:none; margin-bottom:1.2rem;">
+        <div class="drafts-header" onclick="toggleDrafts()">
+          <span class="drafts-title">📁 Saved Drafts</span>
+          <span id="draftsCount" class="drafts-count">0</span>
+          <span id="draftsChevron" style="margin-left:auto;color:var(--ink-light);font-size:0.75rem;transition:transform 0.25s;">▾</span>
+        </div>
+        <div id="draftsList" class="drafts-list" style="display:none;"></div>
+      </div>
+
       <div class="paper-card paper-card-2">
         <span class="corner-deco cd-tl">🌿</span>
+
+        <!-- Template picker -->
+        <div style="margin-bottom:1rem;">
+          <button class="templates-toggle" onclick="toggleTemplates()" id="templatesToggle">
+            ✦ start from a template
+          </button>
+          <div id="templatesGrid" class="templates-grid" style="display:none;"></div>
+        </div>
 
         <div class="letter-field">
           <span class="letter-lbl">To</span>
@@ -795,7 +983,9 @@ html[data-season="summer"] .float-leaf{ filter:saturate(0.6) opacity(0.22); }
         </div>
 
         <div class="btn-row">
+          <button class="btn-ghost" onclick="saveDraft()">📁 Save Draft</button>
           <button class="btn-ghost" onclick="previewLetter()">Preview</button>
+          <button class="btn-ghost" onclick="printLetter()">🖨️ Print</button>
           <button class="btn-ghost" onclick="downloadLetter()">⬇ Save Letter</button>
         </div>
 
@@ -813,6 +1003,15 @@ html[data-season="summer"] .float-leaf{ filter:saturate(0.6) opacity(0.22); }
     <section class="section" id="section-archive">
       <p class="s-title">The Archive Tree</p>
       <p class="s-desc">Every entry, tucked safely in the branches. Tap one to read it again.</p>
+
+      <!-- Mood Chart -->
+      <div style="margin-bottom:1.2rem;">
+        <button class="mood-chart-toggle" id="moodChartToggle" onclick="toggleMoodChart()">
+          📊 Mood History
+        </button>
+        <div id="moodChart" class="mood-chart-wrap" style="display:none;"></div>
+      </div>
+
       <div class="paper-card">
         <div id="archiveList"></div>
       </div>
@@ -977,8 +1176,47 @@ function getSeason(){
 }
 
 // ═══════════════════════════════════════
-// STATE
+// LETTER TEMPLATES
 // ═══════════════════════════════════════
+const LETTER_TEMPLATES = [
+  {
+    icon:'💌', name:'Love Letter',
+    subject:'Something I have been meaning to say',
+    body:`There are words I have practised a hundred times in my head and lost every single time I tried to say them aloud. So here they are, on paper, where they cannot run away.\n\nThe truth is, you have become one of the constants I did not know I was looking for. Not loud or sudden — just quietly, steadily there. And I think that is the rarest kind of thing.\n\nI am writing this because you deserve to know it, even if I never quite find the courage to hand it to you.`,
+  },
+  {
+    icon:'🙏', name:'Thank You',
+    subject:'A thank you that is long overdue',
+    body:`I have been carrying this gratitude around for a while now, and it has started to feel wrong not to put it somewhere you can actually read it.\n\nWhat you did — or perhaps just who you are — made a difference that I suspect you do not fully know about. It shifted something. The kind of shift you only notice later, when you are somewhere better and you trace back the path.\n\nSo, simply: thank you. For real, and for more than you know.`,
+  },
+  {
+    icon:'💔', name:'Apology',
+    subject:'Something I should have said sooner',
+    body:`I have written this letter several times in my head and talked myself out of sending it each time. But I think that is exactly why I need to send it.\n\nI am sorry. Not the kind of sorry that is really just hoping you will say it is fine — but the kind that sits quietly in your chest and knows it was wrong without needing to be told.\n\nI do not expect anything from this. I just needed you to have it.`,
+  },
+  {
+    icon:'🌟', name:'To My Future Self',
+    subject:'From the person you used to be',
+    body:`Hello. I am writing from a moment that feels uncertain, a little crowded, and occasionally beautiful — which I suppose is just what living feels like.\n\nI do not know what has happened by the time you read this. I hope some of the things I am worrying about turned out to be smaller than they looked. I hope you are a little softer, and a little braver, and that you still notice the same small things that make you feel like yourself.\n\nBe kind to whoever you have become. They have earned it.`,
+  },
+  {
+    icon:'🕰️', name:'To My Past Self',
+    subject:'What I wish you had known',
+    body:`You are in a chapter that feels very permanent. I want you to know that it is not — not the hard parts, and not the good parts either. All of it moves.\n\nThe things you are afraid of mostly do not happen. And the things that do happen, you handle — imperfectly, humanly, but you handle them.\n\nYou are allowed to be uncertain. You are allowed to change your mind. You are, in fact, doing better than you think.`,
+  },
+  {
+    icon:'🌸', name:'Someone I Miss',
+    subject:'I have been thinking of you',
+    body:`I thought of you today. Not for any particular reason — just the way you sometimes surface in ordinary moments, like a song you did not know you remembered.\n\nI miss the specific weight of being around you. The way conversations went nowhere important and felt important anyway.\n\nI hope wherever you are, life is treating you gently. You always deserved gentleness, even when you did not ask for it.`,
+  },
+  {
+    icon:'🎉', name:'Congratulations',
+    subject:'You did it — and I mean that',
+    body:`I want to say this properly, because I think congratulations often get said quickly and forgotten just as fast.\n\nWhat you did took something real. Not just talent or luck, but the particular kind of stubbornness that keeps going when going is hard. I have watched that in you, and I want you to know it has not gone unnoticed.\n\nCelebrate this. Fully. You have earned the right to be proud without apology.`,
+  },
+];
+
+
 let mood='', promptIdx=0, entries=[], activeCat='all';
 
 // ═══════════════════════════════════════
@@ -988,6 +1226,7 @@ const LS = {
   ENTRIES:  'langoor-entries',
   DRAFT:    'langoor-journal-draft',
   LETTER:   'langoor-letter-draft',
+  DRAFTS:   'langoor-letter-drafts',
   FONT:     'langoor-font',
   THEME:    'langoor-theme',
 };
@@ -1056,6 +1295,7 @@ function init(){
   newSuggestion();
   spawnBotanicals();
   renderArchive();
+  loadLetterDrafts();
 
   // ── Auto-save listeners ──
   document.getElementById('journalText').addEventListener('input', ()=>{ countWords('journalText','jwc'); persistDraft(); });
@@ -1063,6 +1303,133 @@ function init(){
   document.getElementById('lTo').addEventListener('input',      persistLetter);
   document.getElementById('lFrom').addEventListener('input',    persistLetter);
   document.getElementById('lSubject').addEventListener('input', persistLetter);
+
+  // Ink effect (after DOM is ready)
+  initInkEffect();
+}
+
+// ═══════════════════════════════════════
+// INK EFFECT
+// ═══════════════════════════════════════
+function initInkEffect(){
+  const ta = document.getElementById('journalText');
+
+  // Wrap textarea so canvas can sit on top
+  const wrap = document.createElement('div');
+  wrap.className = 'ink-wrap';
+  ta.parentNode.insertBefore(wrap, ta);
+  wrap.appendChild(ta);
+
+  const canvas = document.createElement('canvas');
+  canvas.id = 'inkCanvas';
+  wrap.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+
+  // ── Mirror div: hidden clone that lets us measure real caret position ──
+  // This handles word-wrap correctly, unlike counting \n characters.
+  const mirror = document.createElement('div');
+  mirror.setAttribute('aria-hidden','true');
+  mirror.style.cssText=[
+    'position:absolute','top:0','left:-9999px',
+    'visibility:hidden','pointer-events:none',
+    'white-space:pre-wrap','word-break:break-word',
+    'overflow-wrap:break-word','overflow:hidden',
+  ].join(';');
+  document.body.appendChild(mirror);
+
+  // Copy all layout-affecting styles from textarea → mirror
+  function syncMirror(){
+    const s = getComputedStyle(ta);
+    [
+      'fontFamily','fontSize','fontWeight','fontStyle','lineHeight',
+      'letterSpacing','textIndent','paddingTop','paddingRight',
+      'paddingBottom','paddingLeft','borderTopWidth','borderRightWidth',
+      'borderBottomWidth','borderLeftWidth','boxSizing',
+    ].forEach(p => { mirror.style[p] = s[p]; });
+    mirror.style.width = ta.clientWidth + 'px';
+  }
+
+  // Accurate caret {x, y} — works on every line including word-wrapped ones
+  function caretCoords(){
+    syncMirror();
+    const pos = ta.selectionStart ?? ta.value.length;
+    mirror.textContent = ta.value.substring(0, pos);
+    const sentinel = document.createElement('span');
+    sentinel.textContent = '\u200B';
+    mirror.appendChild(sentinel);
+    const rawY = sentinel.offsetTop  + sentinel.offsetHeight * 0.5 - ta.scrollTop;
+    const rawX = sentinel.offsetLeft + sentinel.offsetWidth  * 0.5;
+    return {
+      x: Math.max(4, Math.min(rawX, ta.clientWidth  - 4)),
+      y: Math.max(4, Math.min(rawY, ta.clientHeight - 4)),
+    };
+  }
+
+  // Resize canvas to match textarea pixels (HiDPI-aware)
+  function resize(){
+    const r   = ta.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width  = r.width  * dpr;
+    canvas.height = r.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  // Ink colour per theme
+  function inkRGB(){
+    const t = document.documentElement.getAttribute('data-theme')||'';
+    if(t==='night') return '106,174,110';
+    if(t==='sepia') return '122,80,40';
+    return '42,26,8';
+  }
+
+  let drops = [], animId = null;
+
+  function spawnDrop(){
+    const {x, y} = caretCoords();
+    const col     = inkRGB();
+
+    // Main bloom — tight scatter around actual cursor X
+    drops.push({
+      x: x + (Math.random()-.5)*10,
+      y: y + (Math.random()-.5)*6,
+      r:0, maxR:1.8+Math.random()*3.5,
+      alpha:0.5+Math.random()*0.25, col, spd:0.9+Math.random()*0.7,
+    });
+    // Micro-satellite specks — also near cursor, not scattered across the line
+    for(let i=0; i<2+Math.floor(Math.random()*2); i++){
+      drops.push({
+        x: x + (Math.random()-.5)*18,
+        y: y + (Math.random()-.5)*10,
+        r:0, maxR:0.4+Math.random()*1.6,
+        alpha:0.2+Math.random()*0.2, col, spd:0.35+Math.random()*0.45,
+      });
+    }
+    if(!animId) tick();
+  }
+
+  function tick(){
+    const r = ta.getBoundingClientRect();
+    ctx.clearRect(0, 0, r.width, r.height);
+    drops = drops.filter(d => d.alpha > 0.004);
+    for(const d of drops){
+      if(d.r < d.maxR) d.r += d.spd;
+      d.alpha *= 0.87;
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${d.col},${d.alpha.toFixed(3)})`;
+      ctx.fill();
+    }
+    animId = drops.length ? requestAnimationFrame(tick) : null;
+  }
+
+  ta.addEventListener('scroll', ()=>{ drops=[]; ctx.clearRect(0,0,canvas.width,canvas.height); });
+  ta.addEventListener('keydown', e=>{
+    if(e.key.length===1 || e.key==='Enter' || e.key==='Backspace') spawnDrop();
+  });
+
+  resize();
+  window.addEventListener('resize', resize);
+  new ResizeObserver(resize).observe(ta);
 }
 
 // ═══════════════════════════════════════
@@ -1347,6 +1714,232 @@ function loadEntry(i){
   countWords('journalText','jwc');
   switchTab('journal');
   toast('📖 Entry loaded');
+}
+
+// ═══════════════════════════════════════
+// PRINT-READY VIEW
+// ═══════════════════════════════════════
+function printLetter(){
+  const body = document.getElementById('lBody').value.trim();
+  if(!body){ toast('✏️ Write your letter first!'); return; }
+
+  const to      = document.getElementById('lTo').value      || 'Dearest Friend';
+  const from    = document.getElementById('lFrom').value    || '';
+  const subject = document.getElementById('lSubject').value || '';
+  const date    = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const bodyHTML= body.split('\n').map(l=>
+    `<p style="margin:0 0 .9em 0;line-height:1.9;">${l||'&nbsp;'}</p>`
+  ).join('');
+
+  const html=`<!DOCTYPE html><html><head>
+<meta charset="UTF-8"><title>Letter — ${to}</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lora:ital,wght@0,400;1,400&family=Dancing+Script:wght@500&display=swap" rel="stylesheet">
+<style>
+@page{margin:2.5cm 3cm;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Lora',serif;color:#2A1A08;background:#fff;}
+.wrap{max-width:580px;margin:0 auto;padding:2rem 0;}
+.brand{display:flex;justify-content:space-between;align-items:center;font-family:'Dancing Script',cursive;font-size:.78rem;letter-spacing:.14em;color:#8B6550;opacity:.65;text-transform:uppercase;border-bottom:1px solid #E0C07A;padding-bottom:.6rem;margin-bottom:2.5rem;}
+.subject{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:#8B6550;margin-bottom:1.4rem;}
+.salutation{font-family:'Playfair Display',serif;font-size:1.12rem;margin-bottom:1.5rem;}
+.body{font-size:.96rem;}
+.sig{font-family:'Playfair Display',serif;font-style:italic;font-size:1rem;margin-top:2.5rem;}
+.footer{font-family:'Dancing Script',cursive;font-size:.72rem;color:#8B6550;text-align:center;margin-top:3rem;border-top:1px solid #E0C07A;padding-top:.6rem;opacity:.5;}
+</style></head><body>
+<div class="wrap">
+  <div class="brand"><span>Langooric Scriptures</span><span>${date}</span></div>
+  ${subject?`<div class="subject">${subject}</div>`:''}
+  <div class="salutation">${to},</div>
+  <div class="body">${bodyHTML}</div>
+  <div class="sig">${from||'With love'}</div>
+  <div class="footer">✦ &nbsp; written in the treetops, kept in the heart &nbsp; ✦</div>
+</div>
+<script>window.onload=()=>{window.focus();window.print();}<\/script>
+</body></html>`;
+
+  const win=window.open('','_blank','width=780,height=950');
+  if(!win){ toast('⚠️ Allow pop-ups to use Print.'); return; }
+  win.document.write(html);
+  win.document.close();
+}
+
+// ═══════════════════════════════════════
+// MOOD CHART
+// ═══════════════════════════════════════
+let moodChartOpen=false;
+
+function toggleMoodChart(){
+  moodChartOpen=!moodChartOpen;
+  const wrap  =document.getElementById('moodChart');
+  const toggle=document.getElementById('moodChartToggle');
+  wrap.style.display=moodChartOpen?'block':'none';
+  toggle.textContent=(moodChartOpen?'▴ ':'📊 ')+'Mood History';
+  if(moodChartOpen) renderMoodChart();
+}
+
+function renderMoodChart(){
+  const el=document.getElementById('moodChart');
+  const withMood=entries.filter(e=>e.mood);
+  if(!withMood.length){
+    el.innerHTML='<p class="mc-empty">Select a mood on a few entries to see your history here.</p>';
+    return;
+  }
+  const recent=withMood.slice(0,30).reverse();
+  const timelineHTML=recent.map(e=>{
+    const d=new Date(e.ts);
+    return `<div class="mc-bubble" title="${d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}">
+      <span class="mc-emoji">${e.mood}</span>
+      <span class="mc-day">${d.getDate()}</span>
+    </div>`;
+  }).join('');
+
+  const freq={};
+  withMood.forEach(e=>{freq[e.mood]=(freq[e.mood]||0)+1;});
+  const maxFreq=Math.max(...Object.values(freq));
+  const barsHTML=Object.entries(freq).sort((a,b)=>b[1]-a[1]).map(([emoji,count])=>`
+    <div class="mc-bar-row">
+      <span class="mc-bar-emoji">${emoji}</span>
+      <div class="mc-bar-track"><div class="mc-bar-fill" style="width:0%"data-w="${Math.round((count/maxFreq)*100)}"></div></div>
+      <span class="mc-count">${count}×</span>
+    </div>`).join('');
+
+  el.innerHTML=`
+    <span class="mc-label">Last ${recent.length} entries</span>
+    <div class="mc-timeline">${timelineHTML}</div>
+    <hr class="mc-divider">
+    <span class="mc-label">Frequency</span>
+    <div class="mc-bars">${barsHTML}</div>`;
+
+  // Animate bars in
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    el.querySelectorAll('.mc-bar-fill').forEach(b=>{
+      b.style.width=b.dataset.w+'%';
+    });
+  }));
+}
+
+// ═══════════════════════════════════════
+// LETTER TEMPLATES
+// ═══════════════════════════════════════
+let templatesOpen = false;
+
+function toggleTemplates(){
+  templatesOpen = !templatesOpen;
+  const grid   = document.getElementById('templatesGrid');
+  const toggle = document.getElementById('templatesToggle');
+  if(templatesOpen){
+    renderTemplates();
+    grid.style.display = 'grid';
+    toggle.textContent = '✕ close templates';
+  } else {
+    grid.style.display = 'none';
+    toggle.textContent = '✦ start from a template';
+  }
+}
+
+function renderTemplates(){
+  document.getElementById('templatesGrid').innerHTML =
+    LETTER_TEMPLATES.map((t,i) => `
+      <button class="template-card" onclick="useTemplate(${i})">
+        <span class="tc-icon">${t.icon}</span>
+        <span class="tc-name">${t.name}</span>
+      </button>`
+    ).join('');
+}
+
+function useTemplate(i){
+  const t = LETTER_TEMPLATES[i];
+  if(document.getElementById('lBody').value.trim()){
+    if(!confirm('This will replace your current letter. Continue?')) return;
+  }
+  document.getElementById('lSubject').value = t.subject;
+  document.getElementById('lBody').value    = t.body;
+  countWords('lBody','lwc');
+  persistLetter();
+  // Close the picker
+  templatesOpen = true;
+  toggleTemplates();
+  toast(`${t.icon} Template loaded — make it yours!`);
+}
+
+// ═══════════════════════════════════════
+// LETTER DRAFTS
+// ═══════════════════════════════════════
+let letterDrafts = [];
+
+function loadLetterDrafts(){
+  try{ letterDrafts = JSON.parse(localStorage.getItem(LS.DRAFTS)||'[]'); }catch(e){ letterDrafts=[]; }
+  renderDrafts();
+}
+
+function saveDraft(){
+  const body = document.getElementById('lBody').value.trim();
+  if(!body){ toast('✏️ Write something first!'); return; }
+  const to      = document.getElementById('lTo').value.trim();
+  const rawName = to || 'Untitled';
+  const name    = prompt('Name this draft:', `Letter to ${rawName}`);
+  if(name === null) return; // cancelled
+  letterDrafts.unshift({
+    id:      Date.now(),
+    name:    name.trim() || `Letter to ${rawName}`,
+    to,
+    from:    document.getElementById('lFrom').value,
+    subject: document.getElementById('lSubject').value,
+    body,
+    ts:      Date.now(),
+  });
+  try{ localStorage.setItem(LS.DRAFTS, JSON.stringify(letterDrafts)); }catch(e){}
+  renderDrafts();
+  toast('📁 Draft saved!');
+}
+
+function loadDraft(id){
+  const d = letterDrafts.find(x=>x.id===id);
+  if(!d) return;
+  document.getElementById('lTo').value      = d.to      || '';
+  document.getElementById('lFrom').value    = d.from    || '';
+  document.getElementById('lSubject').value = d.subject || '';
+  document.getElementById('lBody').value    = d.body    || '';
+  countWords('lBody','lwc');
+  persistLetter();
+  toast('📂 Draft loaded!');
+}
+
+function deleteDraft(e, id){
+  e.stopPropagation();
+  if(!confirm('Delete this draft?')) return;
+  letterDrafts = letterDrafts.filter(x=>x.id!==id);
+  try{ localStorage.setItem(LS.DRAFTS, JSON.stringify(letterDrafts)); }catch(e){}
+  renderDrafts();
+  toast('🍂 Draft removed.');
+}
+
+let draftsOpen = false;
+function toggleDrafts(){
+  draftsOpen = !draftsOpen;
+  document.getElementById('draftsList').style.display  = draftsOpen ? 'flex'    : 'none';
+  document.getElementById('draftsChevron').style.transform = draftsOpen ? 'rotate(180deg)' : '';
+}
+
+function renderDrafts(){
+  const panel = document.getElementById('draftsPanel');
+  const list  = document.getElementById('draftsList');
+  const count = document.getElementById('draftsCount');
+
+  count.textContent = letterDrafts.length;
+  panel.style.display = letterDrafts.length ? 'block' : 'none';
+
+  if(!letterDrafts.length){ draftsOpen=false; return; }
+
+  list.innerHTML = letterDrafts.map(d=>{
+    const date = new Date(d.ts).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    return `
+      <div class="draft-card" onclick="loadDraft(${d.id})">
+        <span class="draft-name">✉ ${d.name}</span>
+        <span class="draft-meta">${date}</span>
+        <button class="draft-del" onclick="deleteDraft(event,${d.id})" title="Delete">✕</button>
+      </div>`;
+  }).join('');
 }
 
 // ═══════════════════════════════════════
