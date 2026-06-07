@@ -1361,4 +1361,186 @@ function renderMeds(){
     }).join('')}`;
 }
 
+// ═══════════════════════════════════════
+// SETTINGS & DATA MANAGEMENT
+// ═══════════════════════════════════════
+let settingsOpen = false;
+
+function toggleSettings(){
+  settingsOpen = !settingsOpen;
+  const modal = document.getElementById('settingsModal');
+  modal.classList.toggle('open', settingsOpen);
+  if(settingsOpen) renderDataSummary();
+}
+
+function settingsModalClick(e){
+  if(e.target === document.getElementById('settingsModal')) toggleSettings();
+}
+
+function renderDataSummary(){
+  document.getElementById('dataSummary').innerHTML = `
+    <div class="ss-card">
+      <span class="ss-num">${entries.length}</span>
+      <span class="ss-lbl">journal entries</span>
+    </div>
+    <div class="ss-card">
+      <span class="ss-num">${letterDrafts.length}</span>
+      <span class="ss-lbl">letter drafts</span>
+    </div>
+    <div class="ss-card">
+      <span class="ss-num">${meds.length}</span>
+      <span class="ss-lbl">medicines</span>
+    </div>
+    <div class="ss-card">
+      <span class="ss-num">${waterHistory.length}</span>
+      <span class="ss-lbl">days tracked</span>
+    </div>
+  `;
+}
+
+// ── Export ──────────────────────────────────────────────────
+function exportData(){
+  const payload = {
+    version:      2,
+    app:          'Langooric Scriptures',
+    exported:     new Date().toISOString(),
+    entries,
+    letterDrafts,
+    letterDraft:  JSON.parse(localStorage.getItem(LS.LETTER) || '{}'),
+    meds,
+    medsLog,
+    water:        waterData,
+    waterHistory,
+    settings: {
+      theme: localStorage.getItem(LS.THEME) || 'daylight',
+      font:  localStorage.getItem(LS.FONT)  || 'Lora',
+    },
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `langooric-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('📦 Backup downloaded!');
+}
+
+// ── Import ──────────────────────────────────────────────────
+function handleImport(e){
+  const file = e.target.files[0];
+  if(!file){ return; }
+  e.target.value = ''; // reset so same file can be re-imported
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try{
+      const data = JSON.parse(ev.target.result);
+
+      // Validate
+      if(!data.version || data.app !== 'Langooric Scriptures'){
+        toast('⚠️ Not a valid Langooric backup file.');
+        return;
+      }
+
+      // Show summary and ask mode
+      const eCount = data.entries?.length || 0;
+      const dCount = data.letterDrafts?.length || 0;
+      const mCount = data.meds?.length || 0;
+
+      const merge = confirm(
+        `Backup contains:\n` +
+        `📖 ${eCount} journal entries\n` +
+        `✉️  ${dCount} letter drafts\n` +
+        `💊 ${mCount} medicines\n\n` +
+        `OK → Merge (add to existing data)\n` +
+        `Cancel → Replace (wipe & restore)`
+      );
+
+      if(merge){
+        // Merge entries by timestamp — no duplicates
+        const existingTs  = new Set(entries.map(e => e.ts));
+        const newEntries  = (data.entries||[]).filter(e => !existingTs.has(e.ts));
+        entries = [...entries, ...newEntries].sort((a,b) => b.ts - a.ts);
+
+        // Merge letter drafts by id
+        const existingIds = new Set(letterDrafts.map(d => d.id));
+        const newDrafts   = (data.letterDrafts||[]).filter(d => !existingIds.has(d.id));
+        letterDrafts = [...letterDrafts, ...newDrafts];
+
+        // Merge meds by id
+        const existingMedIds = new Set(meds.map(m => m.id));
+        const newMeds = (data.meds||[]).filter(m => !existingMedIds.has(m.id));
+        meds = [...meds, ...newMeds];
+
+        toast(`✅ Merged! ${newEntries.length} new entries added.`);
+
+      } else {
+        if(!confirm('⚠️ This will DELETE all current data. Are you absolutely sure?')) return;
+
+        entries      = data.entries      || [];
+        letterDrafts = data.letterDrafts || [];
+        meds         = data.meds         || [];
+        medsLog      = data.medsLog      || { date:'', taken:{} };
+        waterData    = data.water        || { date:'', count:0, goal:8 };
+        waterHistory = data.waterHistory || [];
+
+        // Restore settings
+        if(data.settings?.theme) setTheme(data.settings.theme);
+        if(data.settings?.font)  applyFont(data.settings.font, false);
+        if(data.letterDraft)
+          try{ localStorage.setItem(LS.LETTER, JSON.stringify(data.letterDraft)); }catch(e){}
+
+        toast(`✅ Replaced! ${entries.length} entries restored.`);
+      }
+
+      // Persist everything
+      persistEntries();
+      try{ localStorage.setItem(LS.DRAFTS,     JSON.stringify(letterDrafts)); }catch(e){}
+      saveMedsData();
+      saveMedsLog();
+      saveWaterData();
+      try{ localStorage.setItem(LS.WATER_HIST, JSON.stringify(waterHistory)); }catch(e){}
+
+      // Re-render all views
+      updateStats();
+      checkOnThisDay();
+      renderDrafts();
+      renderArchive();
+      renderDataSummary();
+
+    } catch(err){
+      toast('⚠️ Could not read that file. Is it a valid backup?');
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── Clear all ───────────────────────────────────────────────
+function clearAllData(){
+  if(!confirm('This will permanently delete ALL your data.\n\nExport a backup first if you need it!')) return;
+  if(!confirm('Last chance — delete everything?')) return;
+
+  Object.values(LS).forEach(key => { try{ localStorage.removeItem(key); }catch(e){} });
+
+  // Reset state
+  entries      = [];
+  letterDrafts = [];
+  meds         = [];
+  medsLog      = { date:todayStr(), taken:{} };
+  waterData    = { date:todayStr(), count:0, goal:8 };
+  waterHistory = [];
+
+  updateStats();
+  renderDrafts();
+  renderArchive();
+  renderMeds();
+  renderWater();
+  renderDataSummary();
+  document.getElementById('otdCard').style.display = 'none';
+  toggleSettings();
+  toast('🍂 All data cleared.');
+}
+
 init();
