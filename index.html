@@ -555,6 +555,66 @@ body::before{
 .milestone-msg{font-size:1.1rem;display:block;}
 .milestone-sub{font-size:0.8rem;opacity:0.8;display:block;margin-top:0.1rem;font-family:'Lora',serif;font-style:italic;}
 
+/* ——— ON THIS DAY ——— */
+.otd-card{
+  background:linear-gradient(135deg,rgba(192,144,48,0.08),rgba(46,94,48,0.06));
+  border:1px solid rgba(192,144,48,0.25);
+  border-radius:1px;padding:1rem 1.4rem;
+  margin-bottom:1.5rem;cursor:pointer;
+  transition:all 0.2s;animation:sectionIn 0.4s ease;
+}
+.otd-card:hover{
+  border-color:var(--gold);
+  box-shadow:0 4px 14px rgba(192,144,48,0.14);
+  transform:translateY(-1px);
+}
+.otd-header{
+  font-family:'Dancing Script',cursive;
+  font-size:0.82rem;color:var(--gold);
+  margin-bottom:0.45rem;letter-spacing:0.04em;
+}
+.otd-text{
+  font-family:'Lora',serif;font-size:0.88rem;
+  color:var(--ink);font-style:italic;
+  line-height:1.65;opacity:0.82;
+  overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
+}
+.otd-meta{
+  font-family:'Dancing Script',cursive;font-size:0.78rem;
+  color:var(--ink-light);margin-top:0.45rem;
+}
+
+/* ——— WORD CLOUD ——— */
+.wc-wrap{
+  display:flex;flex-wrap:wrap;
+  gap:0.45rem 0.75rem;align-items:center;
+  line-height:1.8;padding:0.3rem 0;
+}
+.wc-word{
+  font-family:'Lora',serif;
+  cursor:default;display:inline-block;
+  transition:transform 0.2s;
+}
+.wc-word:hover{transform:scale(1.18);}
+
+/* ——— RANDOM MEMORY ——— */
+.random-mem-btn{
+  background:none;
+  border:1px solid rgba(46,94,48,0.25);
+  border-radius:20px;
+  padding:0.6rem 2rem;
+  font-family:'Dancing Script',cursive;font-size:1rem;
+  color:var(--forest-mid);cursor:pointer;
+  transition:all 0.25s;letter-spacing:0.03em;
+}
+.random-mem-btn:hover{
+  background:var(--forest);color:var(--cream);
+  border-color:var(--forest);
+  transform:translateY(-1px);
+  box-shadow:0 4px 14px rgba(46,94,48,0.2);
+}
+
 /* ——— MOOD CHART ——— */
 .mood-chart-toggle{
   background:var(--paper);border:1px solid rgba(46,94,48,0.18);
@@ -852,7 +912,12 @@ html[data-season="summer"] .float-leaf{ filter:saturate(0.6) opacity(0.22); }
         <p class="dq-author" id="dqAuthor"></p>
       </div>
 
-      <!-- Mood -->
+      <!-- On This Day -->
+      <div id="otdCard" class="otd-card" style="display:none;" onclick="otdClick()">
+        <div class="otd-header">📅 On this day</div>
+        <p class="otd-text" id="otdText"></p>
+        <p class="otd-meta" id="otdMeta"></p>
+      </div>
       <div class="mood-row">
         <span class="mood-label">Today feels like</span>
         <button class="mood-btn" data-mood="🌟" onclick="pickMood(this)" title="Radiant">🌟</button>
@@ -1005,11 +1070,28 @@ html[data-season="summer"] .float-leaf{ filter:saturate(0.6) opacity(0.22); }
       <p class="s-desc">Every entry, tucked safely in the branches. Tap one to read it again.</p>
 
       <!-- Mood Chart -->
-      <div style="margin-bottom:1.2rem;">
+      <div style="margin-bottom:0.6rem;">
         <button class="mood-chart-toggle" id="moodChartToggle" onclick="toggleMoodChart()">
           📊 Mood History
         </button>
         <div id="moodChart" class="mood-chart-wrap" style="display:none;"></div>
+      </div>
+
+      <!-- Word Cloud -->
+      <div style="margin-bottom:0.6rem;">
+        <button class="mood-chart-toggle" id="wordCloudToggle" onclick="toggleWordCloud()">
+          ☁️ Word Cloud
+        </button>
+        <div id="wordCloudWrap" class="mood-chart-wrap" style="display:none;">
+          <div class="wc-wrap" id="wordCloudEl"></div>
+        </div>
+      </div>
+
+      <!-- Random Memory -->
+      <div style="margin-bottom:1.4rem;text-align:center;">
+        <button class="random-mem-btn" onclick="randomMemory()">
+          🎲 Surprise Me
+        </button>
       </div>
 
       <div class="paper-card">
@@ -1270,6 +1352,7 @@ function init(){
   // ── Restore entries ──
   try{ entries=JSON.parse(localStorage.getItem(LS.ENTRIES)||'[]'); }catch(e){ entries=[]; }
   updateStats();
+  checkOnThisDay();
 
   // ── Restore in-progress journal draft ──
   const savedDraft = localStorage.getItem(LS.DRAFT)||'';
@@ -1714,6 +1797,153 @@ function loadEntry(i){
   countWords('journalText','jwc');
   switchTab('journal');
   toast('📖 Entry loaded');
+}
+
+// ═══════════════════════════════════════
+// ON THIS DAY
+// ═══════════════════════════════════════
+let otdEntry = null;
+
+function checkOnThisDay(){
+  const now      = new Date();
+  const thisMonth = now.getMonth();
+  const thisDay   = now.getDate();
+  const todayKey  = dayKey(Date.now());
+
+  // Find entries on same month+day but NOT today
+  const matches = entries.filter(e=>{
+    const d = new Date(e.ts);
+    return d.getMonth()===thisMonth && d.getDate()===thisDay && dayKey(e.ts)!==todayKey;
+  });
+
+  const card = document.getElementById('otdCard');
+  if(!matches.length){ card.style.display='none'; return; }
+
+  otdEntry = matches[0];
+  const d   = new Date(otdEntry.ts);
+  const ago = now.getFullYear() - d.getFullYear();
+  const agoStr = ago===0 ? 'earlier this year'
+               : ago===1 ? 'one year ago'
+               : `${ago} years ago`;
+
+  const preview = otdEntry.text.length > 160
+    ? otdEntry.text.slice(0,160).trimEnd() + '…'
+    : otdEntry.text;
+
+  document.getElementById('otdText').textContent = preview;
+  document.getElementById('otdMeta').textContent =
+    `${otdEntry.mood||'🌿'} ${d.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})} · ${agoStr}`;
+
+  card.style.display='block';
+}
+
+function otdClick(){
+  if(!otdEntry) return;
+  const i = entries.indexOf(otdEntry);
+  if(i>=0) loadEntry(i);
+}
+
+// ═══════════════════════════════════════
+// WORD CLOUD
+// ═══════════════════════════════════════
+let wordCloudOpen = false;
+
+const STOP_WORDS = new Set([
+  'the','a','an','and','or','but','is','are','was','were','be','been','being',
+  'have','has','had','do','does','did','will','would','could','should','may',
+  'might','shall','can','i','me','my','we','our','you','your','he','him','his',
+  'she','her','it','its','they','them','their','what','which','who','this',
+  'that','these','those','am','not','no','so','if','as','at','by','for','with',
+  'about','of','to','from','up','in','out','on','into','then','just','very',
+  'also','even','still','only','more','all','one','when','where','there','here',
+  'some','any','than','too','how','get','like','know','think','feel','felt','got',
+  'went','said','want','wanted','need','needed','because','though','through',
+  'over','now','back','time','day','way','see','seen','come','came','go','well',
+  'make','made','take','took','every','never','always','often','much','many',
+  'most','after','before','being','own','little','something','someone','around',
+]);
+
+function toggleWordCloud(){
+  wordCloudOpen=!wordCloudOpen;
+  const wrap  =document.getElementById('wordCloudWrap');
+  const toggle=document.getElementById('wordCloudToggle');
+  wrap.style.display=wordCloudOpen?'block':'none';
+  toggle.textContent=(wordCloudOpen?'▴ ':'☁️ ')+'Word Cloud';
+  if(wordCloudOpen) renderWordCloud();
+}
+
+function renderWordCloud(){
+  const el = document.getElementById('wordCloudEl');
+  if(!entries.length){
+    el.innerHTML='<p class="mc-empty">Write some entries first to see your word cloud.</p>';
+    return;
+  }
+
+  const freq={};
+  entries.forEach(e=>{
+    (e.text||'').toLowerCase()
+      .replace(/[^a-z\s'-]/g,' ')
+      .split(/\s+/)
+      .forEach(w=>{
+        w=w.replace(/^[-']+|[-']+$/g,'');
+        if(w.length>3 && !STOP_WORDS.has(w)) freq[w]=(freq[w]||0)+1;
+      });
+  });
+
+  const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,55);
+  if(!sorted.length){
+    el.innerHTML='<p class="mc-empty">Keep writing — your most-used words will appear here!</p>';
+    return;
+  }
+
+  const maxF  = sorted[0][1];
+  const colors= ['var(--forest)','var(--bark)','var(--fig)','var(--gold)','var(--forest-mid)','var(--bark-light)','var(--lavender)'];
+
+  // Shuffle so common words don't always cluster at the start
+  const shuffled=[...sorted].sort(()=>Math.random()-0.5);
+
+  el.innerHTML=shuffled.map(([word,count],i)=>{
+    const size   = 0.72 + (count/maxF)*1.85;
+    const opacity= 0.45 + (count/maxF)*0.55;
+    const color  = colors[i%colors.length];
+    const weight = count/maxF > 0.6 ? '600' : '400';
+    return `<span class="wc-word" style="font-size:${size.toFixed(2)}rem;color:${color};opacity:${opacity};font-weight:${weight};" title="${count} time${count===1?'':'s'}">${word}</span>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// RANDOM MEMORY
+// ═══════════════════════════════════════
+function randomMemory(){
+  if(!entries.length){ toast('📖 Write some entries first!'); return; }
+
+  const i = Math.floor(Math.random()*entries.length);
+  const e = entries[i];
+  const bodyHTML = e.text.split('\n').map(l=>
+    `<p style="margin-bottom:0.75rem;line-height:1.85;">${l||'&nbsp;'}</p>`
+  ).join('');
+
+  document.getElementById('previewContent').innerHTML=`
+    <div style="font-family:'Dancing Script',cursive;color:var(--gold);font-size:0.82rem;margin-bottom:0.3rem;letter-spacing:0.04em;">🎲 Random Memory</div>
+    <div style="font-family:'Dancing Script',cursive;color:var(--bark-light);font-size:0.88rem;margin-bottom:1.4rem;opacity:0.8;">
+      ${e.mood||'🌿'} &nbsp;${e.date}
+    </div>
+    ${e.prompt?`<div style="font-family:'Lora',serif;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-light);margin-bottom:1.2rem;font-style:italic;border-left:2px solid var(--forest-pale);padding-left:0.7rem;">${e.prompt}</div>`:''}
+    <div style="font-family:'Lora',serif;font-size:0.95rem;color:var(--ink);">${bodyHTML}</div>
+    <div style="display:flex;gap:0.65rem;margin-top:1.8rem;flex-wrap:wrap;">
+      <button onclick="closeModal();loadEntry(${i})"
+        style="background:var(--forest);color:var(--cream);border:none;padding:0.65rem 1.4rem;font-family:'Lora',serif;font-size:0.82rem;cursor:pointer;border-radius:1px;transition:opacity 0.2s;"
+        onmouseenter="this.style.opacity='.85'" onmouseleave="this.style.opacity='1'">
+        Open in Journal
+      </button>
+      <button onclick="randomMemory()"
+        style="background:none;border:1px solid var(--bark-light);color:var(--bark-light);padding:0.65rem 1.4rem;font-family:'Dancing Script',cursive;font-size:0.9rem;cursor:pointer;border-radius:1px;transition:all 0.2s;"
+        onmouseenter="this.style.background='var(--bark-light)';this.style.color='white'" onmouseleave="this.style.background='none';this.style.color='var(--bark-light)'">
+        ✦ Another one
+      </button>
+    </div>
+  `;
+  document.getElementById('previewModal').classList.add('open');
 }
 
 // ═══════════════════════════════════════
