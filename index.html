@@ -671,6 +671,166 @@ body::before{
   margin:1rem 0;
 }
 
+/* ——— WATER TRACKER ——— */
+.wcd-wrap{
+  display:inline-flex;align-items:baseline;gap:0.2rem;
+  font-family:'Playfair Display',serif;
+}
+.wcd-num{font-size:3rem;color:var(--ink);line-height:1;font-weight:600;}
+.wcd-sep{font-size:2rem;color:var(--ink-light);margin:0 0.15rem;}
+.wcd-goal-num{font-size:2rem;color:var(--ink-light);}
+.wcd-unit{
+  font-family:'Dancing Script',cursive;font-size:0.9rem;
+  color:var(--ink-light);margin-top:0.1rem;margin-bottom:0.2rem;
+}
+.water-glass{
+  width:88px;height:155px;
+  border:2.5px solid var(--forest);
+  border-radius:6px 6px 24px 24px;
+  position:relative;overflow:hidden;
+  margin:1.2rem auto;
+  background:rgba(46,94,48,0.03);
+}
+.water-fill{
+  position:absolute;bottom:0;left:0;right:0;height:0%;
+  background:linear-gradient(to top,rgba(50,150,200,0.88),rgba(100,200,240,0.6));
+  transition:height 0.7s cubic-bezier(0.34,1.2,0.64,1);
+}
+.water-wave{
+  position:absolute;top:-9px;left:-30%;
+  width:160%;height:18px;
+  background:rgba(120,210,250,0.4);
+  border-radius:50%;
+  animation:waveAnim 2.6s ease-in-out infinite;
+}
+@keyframes waveAnim{
+  0%,100%{transform:translateX(0) rotate(-1deg);}
+  50%    {transform:translateX(14%) rotate(1deg);}
+}
+.water-shine{
+  position:absolute;top:8px;left:10px;
+  width:14px;height:52%;
+  background:linear-gradient(to bottom,rgba(255,255,255,0.25),transparent);
+  border-radius:8px;pointer-events:none;
+}
+.water-controls{
+  display:flex;gap:1.6rem;justify-content:center;
+  margin:0.6rem 0 0.8rem;
+}
+.water-btn{
+  width:54px;height:54px;border-radius:50%;
+  border:2px solid var(--forest);background:none;
+  font-size:1.8rem;color:var(--forest);cursor:pointer;
+  transition:all 0.2s;display:flex;align-items:center;justify-content:center;
+  font-family:'Lora',serif;font-weight:300;
+}
+.water-btn:hover{background:var(--forest);color:var(--cream);transform:scale(1.06);}
+.water-btn:active{transform:scale(0.94);}
+.water-msg{
+  font-family:'Dancing Script',cursive;font-size:1rem;
+  color:var(--forest-mid);margin-bottom:0.8rem;min-height:1.5rem;
+  transition:opacity 0.3s;
+}
+.water-dots{
+  display:flex;gap:0.35rem;justify-content:center;
+  flex-wrap:wrap;max-width:260px;margin:0 auto 1rem;
+}
+.water-dot{
+  width:20px;height:20px;border-radius:50%;
+  border:2px solid rgba(46,94,48,0.22);cursor:pointer;
+  transition:all 0.2s;background:transparent;display:inline-block;
+}
+.water-dot.filled{background:rgba(55,155,205,0.65);border-color:rgba(55,155,205,0.35);}
+.water-dot:hover{transform:scale(1.25);}
+.water-goal-row{
+  display:flex;align-items:center;gap:0.4rem;
+  justify-content:center;margin-bottom:1.4rem;flex-wrap:wrap;
+}
+.water-goal-label{
+  font-family:'Dancing Script',cursive;font-size:0.88rem;color:var(--ink-light);
+}
+.wg-btn{
+  background:none;border:1px solid rgba(46,94,48,0.22);
+  border-radius:20px;padding:0.25rem 0.75rem;
+  font-family:'Lora',serif;font-size:0.8rem;color:var(--ink-light);
+  cursor:pointer;transition:all 0.2s;
+}
+.wg-btn:hover,.wg-btn.active{background:var(--forest);border-color:var(--forest);color:white;}
+.water-history{
+  border-top:1px solid rgba(46,94,48,0.12);
+  padding-top:1rem;margin-top:0.5rem;text-align:left;
+}
+.water-hist-row{
+  display:flex;gap:0.5rem;align-items:flex-end;
+  justify-content:center;height:60px;margin-top:0.5rem;
+}
+.water-hist-day{
+  display:flex;flex-direction:column;align-items:center;
+  gap:0.3rem;flex:1;max-width:36px;
+}
+.whd-bar{
+  width:100%;height:44px;
+  background:rgba(46,94,48,0.08);
+  border-radius:3px;overflow:hidden;
+  display:flex;align-items:flex-end;
+}
+.whd-fill{width:100%;border-radius:3px;transition:height 0.5s ease;}
+.whd-label{font-family:'Lora',serif;font-size:0.65rem;color:var(--ink-light);opacity:0.7;}
+
+/* ——— MEDICINE TRACKER ——— */
+.med-add-wrap{margin-bottom:0.8rem;}
+.med-time-select{display:flex;gap:0.5rem 1.4rem;flex-wrap:wrap;margin-top:0.3rem;}
+.med-time-label{
+  display:flex;align-items:center;gap:0.5rem;
+  font-family:'Lora',serif;font-size:0.85rem;color:var(--ink);cursor:pointer;
+  padding:0.2rem 0;
+}
+.med-time-label input{accent-color:var(--forest);width:15px;height:15px;}
+.med-card{
+  background:var(--paper);
+  border:1px solid rgba(46,94,48,0.12);
+  border-radius:1px;padding:1rem 1.2rem;
+  margin-bottom:0.8rem;
+  box-shadow:0 1px 6px rgba(42,26,8,0.05);
+  animation:sectionIn 0.3s ease;
+}
+.med-card-header{
+  display:flex;align-items:flex-start;
+  justify-content:space-between;
+  padding-left:0.8rem;margin-bottom:0.5rem;
+}
+.med-card-info{flex:1;}
+.med-name{
+  font-family:'Lora',serif;font-size:0.95rem;
+  color:var(--ink);font-weight:500;display:block;
+}
+.med-dose{
+  font-family:'Dancing Script',cursive;font-size:0.82rem;
+  color:var(--ink-light);display:block;margin-top:0.1rem;
+}
+.med-notes{
+  font-family:'Lora',serif;font-size:0.78rem;
+  color:var(--ink-light);font-style:italic;
+  margin-bottom:0.7rem;padding-left:0.8rem;
+}
+.med-times{display:flex;gap:0.45rem;flex-wrap:wrap;padding-left:0.8rem;}
+.med-time-btn{
+  border:1.5px solid;border-radius:20px;
+  padding:0.3rem 0.8rem;
+  font-family:'Lora',serif;font-size:0.78rem;cursor:pointer;
+  transition:all 0.2s;background:none;
+}
+.med-time-btn.taken{text-decoration:none;}
+.med-badge{
+  font-family:'Dancing Script',cursive;font-size:0.78rem;
+  padding:0.15rem 0.5rem;border-radius:10px;white-space:nowrap;
+}
+.med-overall{
+  margin-bottom:1.2rem;
+  background:var(--paper);border:1px solid rgba(46,94,48,0.12);
+  border-radius:1px;padding:0.8rem 1rem;
+}
+
 /* ——— MOBILE IMPROVEMENTS ——— */
 button{ touch-action:manipulation; }
 @media(max-width:600px){
@@ -899,6 +1059,8 @@ html[data-season="summer"] .float-leaf{ filter:saturate(0.6) opacity(0.22); }
     <button class="nav-btn" id="tnav-prompts" onclick="switchTab('prompts')">🍃 Prompts</button>
     <button class="nav-btn" id="tnav-letters" onclick="switchTab('letters')">✉ Letters</button>
     <button class="nav-btn" id="tnav-archive" onclick="switchTab('archive')">🗂 Archive</button>
+    <button class="nav-btn" id="tnav-water"   onclick="switchTab('water')">💧 Water</button>
+    <button class="nav-btn" id="tnav-meds"    onclick="switchTab('meds')">💊 Meds</button>
   </nav>
 
   <!-- MAIN -->
@@ -1099,7 +1261,102 @@ html[data-season="summer"] .float-leaf{ filter:saturate(0.6) opacity(0.22); }
       </div>
     </section>
 
-  </main>
+    <!-- ═══ WATER ═══ -->
+    <section class="section" id="section-water">
+      <p class="s-title">💧 Daily Water</p>
+      <p class="s-desc">Stay hydrated — your body thanks you quietly every time.</p>
+
+      <div class="paper-card" style="text-align:center;">
+
+        <!-- Count display -->
+        <div class="wcd-wrap">
+          <span class="wcd-num" id="wNum">0</span>
+          <span class="wcd-sep">/</span>
+          <span class="wcd-goal-num" id="wGoalDisplay">8</span>
+        </div>
+        <div class="wcd-unit">glasses today</div>
+
+        <!-- Animated glass -->
+        <div class="water-glass">
+          <div class="water-fill" id="waterFillEl">
+            <div class="water-wave"></div>
+          </div>
+          <div class="water-shine"></div>
+        </div>
+
+        <!-- + / − controls -->
+        <div class="water-controls">
+          <button class="water-btn" onclick="adjustWater(-1)">−</button>
+          <button class="water-btn water-plus" onclick="adjustWater(1)">+</button>
+        </div>
+
+        <!-- Motivational message -->
+        <p class="water-msg" id="waterMsg"></p>
+
+        <!-- Dot indicators -->
+        <div class="water-dots" id="waterDots"></div>
+
+        <!-- Goal picker -->
+        <div class="water-goal-row">
+          <span class="water-goal-label">Goal</span>
+          <button class="wg-btn" data-goal="6" onclick="setWaterGoal(6)">6</button>
+          <button class="wg-btn" data-goal="8" onclick="setWaterGoal(8)">8</button>
+          <button class="wg-btn" data-goal="10" onclick="setWaterGoal(10)">10</button>
+          <button class="wg-btn" data-goal="12" onclick="setWaterGoal(12)">12</button>
+          <span class="water-goal-label">glasses / day</span>
+        </div>
+
+        <!-- 7-day history -->
+        <div class="water-history">
+          <span class="mc-label">Last 7 days</span>
+          <div class="water-hist-row" id="waterHistRow"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ═══ MEDS ═══ -->
+    <section class="section" id="section-meds">
+      <p class="s-title">💊 Medicines</p>
+      <p class="s-desc">Never miss a dose — your daily checklist, always ready.</p>
+
+      <!-- Add medicine form -->
+      <div class="med-add-wrap">
+        <button class="mood-chart-toggle" id="medFormToggle" onclick="toggleMedForm()">
+          ＋ Add Medicine
+        </button>
+        <div id="medForm" class="mood-chart-wrap" style="display:none;">
+          <div class="letter-field">
+            <span class="letter-lbl">Name</span>
+            <input class="letter-input" id="medName" placeholder="e.g. Paracetamol" />
+          </div>
+          <div class="letter-field">
+            <span class="letter-lbl">Dose</span>
+            <input class="letter-input" id="medDose" placeholder="e.g. 500mg" />
+          </div>
+          <div class="letter-field">
+            <span class="letter-lbl">Notes</span>
+            <input class="letter-input" id="medNotes" placeholder="e.g. After meals" />
+          </div>
+          <div style="margin-top:1rem;">
+            <div style="font-family:'Dancing Script',cursive;font-size:0.85rem;color:var(--ink-light);margin-bottom:0.6rem;">When to take</div>
+            <div class="med-time-select" id="medTimeSelect">
+              <label class="med-time-label"><input type="checkbox" value="Morning">  🌅 Morning</label>
+              <label class="med-time-label"><input type="checkbox" value="Afternoon">☀️ Afternoon</label>
+              <label class="med-time-label"><input type="checkbox" value="Evening">  🌆 Evening</label>
+              <label class="med-time-label"><input type="checkbox" value="Night">    🌙 Night</label>
+            </div>
+          </div>
+          <div class="btn-row" style="margin-top:1rem;">
+            <button class="btn-primary" onclick="addMed()">Add Medicine</button>
+            <button class="btn-ghost"   onclick="toggleMedForm()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Medicine list -->
+      <div id="medList" style="margin-top:0.8rem;"></div>
+    </section>
 
   <div class="footer-line">🌿 &nbsp; written in the treetops, kept in the heart &nbsp; 🌿</div>
 </div>
@@ -1305,12 +1562,16 @@ let mood='', promptIdx=0, entries=[], activeCat='all';
 // STORAGE HELPERS
 // ═══════════════════════════════════════
 const LS = {
-  ENTRIES:  'langoor-entries',
-  DRAFT:    'langoor-journal-draft',
-  LETTER:   'langoor-letter-draft',
-  DRAFTS:   'langoor-letter-drafts',
-  FONT:     'langoor-font',
-  THEME:    'langoor-theme',
+  ENTRIES:    'langoor-entries',
+  DRAFT:      'langoor-journal-draft',
+  LETTER:     'langoor-letter-draft',
+  DRAFTS:     'langoor-letter-drafts',
+  FONT:       'langoor-font',
+  THEME:      'langoor-theme',
+  WATER:      'langoor-water',
+  WATER_HIST: 'langoor-water-hist',
+  MEDS:       'langoor-meds',
+  MEDS_LOG:   'langoor-meds-log',
 };
 
 function persistEntries(){
@@ -1379,6 +1640,8 @@ function init(){
   spawnBotanicals();
   renderArchive();
   loadLetterDrafts();
+  loadWater();
+  loadMeds();
 
   // ── Auto-save listeners ──
   document.getElementById('journalText').addEventListener('input', ()=>{ countWords('journalText','jwc'); persistDraft(); });
@@ -1628,7 +1891,9 @@ function switchTab(name){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('section-'+name).classList.add('active');
   document.getElementById('tnav-'+name).classList.add('active');
-  if(name==='archive')renderArchive();
+  if(name==='archive') renderArchive();
+  if(name==='water')   renderWater();
+  if(name==='meds')    renderMeds();
 }
 
 // ═══════════════════════════════════════
@@ -2243,6 +2508,239 @@ function toast(msg){
   const el=document.getElementById('toast');
   el.textContent=msg;el.classList.add('show');
   toastTimer=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+// ═══════════════════════════════════════
+// WATER TRACKER
+// ═══════════════════════════════════════
+let waterData    = { date:'', count:0, goal:8 };
+let waterHistory = [];
+
+function todayStr(){ return new Date().toISOString().split('T')[0]; }
+
+function loadWater(){
+  try{ waterData    = JSON.parse(localStorage.getItem(LS.WATER)     ||'{}'); }catch(e){}
+  try{ waterHistory = JSON.parse(localStorage.getItem(LS.WATER_HIST)||'[]'); }catch(e){ waterHistory=[]; }
+  if(!waterData.goal) waterData.goal = 8;
+
+  const today = todayStr();
+  if(waterData.date !== today){
+    // Archive yesterday's count before resetting
+    if(waterData.date && waterData.count > 0){
+      waterHistory.unshift({ date:waterData.date, count:waterData.count, goal:waterData.goal });
+      waterHistory = waterHistory.slice(0,7);
+      try{ localStorage.setItem(LS.WATER_HIST, JSON.stringify(waterHistory)); }catch(e){}
+    }
+    waterData.count = 0;
+    waterData.date  = today;
+    saveWaterData();
+  }
+  renderWater();
+}
+
+function saveWaterData(){
+  try{ localStorage.setItem(LS.WATER, JSON.stringify(waterData)); }catch(e){}
+}
+
+function adjustWater(delta){
+  waterData.count = Math.max(0, Math.min(waterData.goal+3, waterData.count+delta));
+  saveWaterData();
+  renderWater();
+  if(waterData.count === waterData.goal) toast('🎉 Water goal reached! Amazing!');
+}
+
+function setWaterGoal(g){
+  waterData.goal = g;
+  saveWaterData();
+  renderWater();
+}
+
+function renderWater(){
+  const { count, goal } = waterData;
+  const pct = Math.min(count / goal, 1);
+
+  document.getElementById('wNum').textContent         = count;
+  document.getElementById('wGoalDisplay').textContent = goal;
+  document.getElementById('waterFillEl').style.height = (pct*100)+'%';
+
+  // Motivational message
+  const MSGS = [
+    [1.0, '🎉 Goal reached! You crushed it today.'],
+    [0.75,'💧 Almost there — one more push!'],
+    [0.5, '🌿 Halfway! You\'re doing great.'],
+    [0.25,'✨ Good start — keep going!'],
+    [0.01,'💧 First sip — let\'s go!'],
+    [0,   '🌱 Tap + to log your first glass.'],
+  ];
+  const msg = MSGS.find(([t])=> pct >= t);
+  document.getElementById('waterMsg').textContent = msg ? msg[1] : '';
+
+  // Dot indicators
+  document.getElementById('waterDots').innerHTML =
+    Array.from({length:goal},(_,i)=>
+      `<span class="water-dot ${i<count?'filled':''}" onclick="adjustWater(${i<count?-1:1})" title="Glass ${i+1}"></span>`
+    ).join('');
+
+  // Goal buttons
+  document.querySelectorAll('.wg-btn').forEach(b=>{
+    b.classList.toggle('active', +b.dataset.goal === goal);
+  });
+
+  // History bars
+  const DAY_LABELS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const histEl = document.getElementById('waterHistRow');
+  if(!waterHistory.length){
+    histEl.innerHTML='<span style="font-style:italic;font-size:0.78rem;opacity:0.5;">No history yet</span>';
+  } else {
+    histEl.innerHTML = waterHistory.slice(0,7).map(h=>{
+      const d   = new Date(h.date);
+      const p   = Math.min(h.count/h.goal,1);
+      const col = p>=1?'var(--forest)':p>=0.5?'var(--gold)':'var(--bark-light)';
+      return `<div class="water-hist-day">
+        <div class="whd-bar"><div class="whd-fill" style="height:${Math.round(p*100)}%;background:${col};"></div></div>
+        <span class="whd-label">${DAY_LABELS[d.getDay()]}</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ═══════════════════════════════════════
+// MEDICINE TRACKER
+// ═══════════════════════════════════════
+let meds       = [];
+let medsLog    = { date:'', taken:{} };
+let medFormOpen = false;
+
+const MED_COLORS = ['#4A8A4E','#9B7DAA','#C09030','#4A9A8A','#C97090','#6A7AAA'];
+const TIME_ICONS  = { Morning:'🌅', Afternoon:'☀️', Evening:'🌆', Night:'🌙' };
+
+function loadMeds(){
+  try{ meds    = JSON.parse(localStorage.getItem(LS.MEDS)    ||'[]'); }catch(e){ meds=[]; }
+  try{ medsLog = JSON.parse(localStorage.getItem(LS.MEDS_LOG)||'{}'); }catch(e){}
+  if(!medsLog.taken) medsLog.taken = {};
+
+  const today = todayStr();
+  if(medsLog.date !== today){
+    medsLog = { date:today, taken:{} };
+    saveMedsLog();
+  }
+  renderMeds();
+}
+
+function saveMedsData(){ try{ localStorage.setItem(LS.MEDS,    JSON.stringify(meds));    }catch(e){} }
+function saveMedsLog(){   try{ localStorage.setItem(LS.MEDS_LOG,JSON.stringify(medsLog)); }catch(e){} }
+
+function toggleMedForm(){
+  medFormOpen = !medFormOpen;
+  document.getElementById('medForm').style.display      = medFormOpen ? 'block':'none';
+  document.getElementById('medFormToggle').textContent  = medFormOpen ? '✕ Cancel':'＋ Add Medicine';
+  if(!medFormOpen) clearMedForm();
+}
+
+function clearMedForm(){
+  ['medName','medDose','medNotes'].forEach(id=>{ document.getElementById(id).value=''; });
+  document.querySelectorAll('#medTimeSelect input').forEach(cb=>{ cb.checked=false; });
+}
+
+function addMed(){
+  const name = document.getElementById('medName').value.trim();
+  if(!name){ toast('💊 Enter a medicine name first.'); return; }
+  const times = [...document.querySelectorAll('#medTimeSelect input:checked')].map(cb=>cb.value);
+  if(!times.length){ toast('💊 Pick at least one time slot.'); return; }
+
+  meds.push({
+    id:    Date.now(),
+    name,
+    dose:  document.getElementById('medDose').value.trim(),
+    notes: document.getElementById('medNotes').value.trim(),
+    times,
+    color: MED_COLORS[meds.length % MED_COLORS.length],
+  });
+  saveMedsData();
+  toggleMedForm();
+  renderMeds();
+  toast('💊 Medicine added!');
+}
+
+function toggleMedTaken(medId, timeIdx){
+  const key = `${medId}_${timeIdx}`;
+  medsLog.taken[key] = !medsLog.taken[key];
+  saveMedsLog();
+  renderMeds();
+  // Celebrate if all doses done for that med
+  const med = meds.find(m=>m.id===medId);
+  if(med && med.times.every((_,i)=>medsLog.taken[`${medId}_${i}`])){
+    toast(`✅ All doses of ${med.name} done for today!`);
+  }
+}
+
+function deleteMed(id){
+  if(!confirm('Remove this medicine?')) return;
+  meds = meds.filter(m=>m.id!==id);
+  saveMedsData();
+  renderMeds();
+  toast('🍂 Medicine removed.');
+}
+
+function renderMeds(){
+  const list = document.getElementById('medList');
+  if(!meds.length){
+    list.innerHTML=`<div class="empty-state" style="padding:2rem 1rem;">
+      Your medicine list is empty.<br><br>
+      Tap <strong>＋ Add Medicine</strong> above to get started. 💊
+    </div>`;
+    return;
+  }
+
+  // Overall progress
+  let total=0, taken=0;
+  meds.forEach(m=> m.times.forEach((_,i)=>{
+    total++;
+    if(medsLog.taken[`${m.id}_${i}`]) taken++;
+  }));
+  const pct = total ? Math.round((taken/total)*100) : 0;
+
+  list.innerHTML = `
+    <div class="med-overall">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+        <span style="font-family:'Dancing Script',cursive;color:var(--forest-mid);font-size:0.92rem;">Today's doses</span>
+        <span style="font-family:'Lora',serif;font-size:0.8rem;color:var(--ink-light);">${taken} / ${total} taken</span>
+      </div>
+      <div class="mc-bar-track" style="height:8px;">
+        <div class="mc-bar-fill" style="width:${pct}%;transition:width 0.5s ease;"></div>
+      </div>
+    </div>
+
+    ${meds.map(m=>{
+      const doneCt = m.times.filter((_,i)=>medsLog.taken[`${m.id}_${i}`]).length;
+      const allDone = doneCt === m.times.length;
+      return `
+      <div class="med-card" style="${allDone?'opacity:0.75;':''}">
+        <div class="med-card-header" style="border-left:3px solid ${m.color};">
+          <div class="med-card-info">
+            <span class="med-name">💊 ${m.name}${allDone?' <span style="font-size:0.75rem;color:var(--forest);">✓ all done</span>':''}</span>
+            ${m.dose ?`<span class="med-dose">${m.dose}</span>`:''}
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span class="med-badge" style="background:${m.color}20;color:${m.color};">${doneCt}/${m.times.length}</span>
+            <button class="draft-del" onclick="deleteMed(${m.id})" title="Remove">✕</button>
+          </div>
+        </div>
+        ${m.notes?`<div class="med-notes">📝 ${m.notes}</div>`:''}
+        <div class="med-times">
+          ${m.times.map((t,i)=>{
+            const done = !!medsLog.taken[`${m.id}_${i}`];
+            return `<button class="med-time-btn${done?' taken':''}"
+              onclick="toggleMedTaken(${m.id},${i})"
+              style="${done
+                ? `background:${m.color};border-color:${m.color};color:#fff;`
+                : `border-color:${m.color};color:${m.color};`}">
+              ${TIME_ICONS[t]||'⏰'} ${t}${done?' ✓':''}
+            </button>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('')}`;
 }
 
 init();
