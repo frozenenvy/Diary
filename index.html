@@ -30,6 +30,45 @@
   </button>
 </div>
 
+<!-- SETTINGS BUTTON -->
+<button class="settings-fab" onclick="toggleSettings()" title="Data & Settings">⚙</button>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-bg" id="settingsModal" onclick="settingsModalClick(event)">
+  <div class="modal-box" style="max-width:480px;">
+    <button class="modal-close" onclick="toggleSettings()">✕</button>
+
+    <div style="font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--ink);margin-bottom:0.2rem;">Data &amp; Settings</div>
+    <div style="font-family:'Dancing Script',cursive;font-size:0.85rem;color:var(--ink-light);margin-bottom:1.6rem;">Your data lives in this browser — export it to keep it safe.</div>
+
+    <!-- Summary -->
+    <div class="settings-summary" id="dataSummary"></div>
+
+    <!-- Export -->
+    <div class="settings-section">
+      <div class="settings-section-title">📦 Export</div>
+      <p class="settings-desc">Downloads everything as a single <code>.json</code> backup file — entries, letters, medicines, water history, and settings.</p>
+      <button class="btn-primary" onclick="exportData()" style="margin-top:0.8rem;width:100%;">⬇ Download Backup</button>
+    </div>
+
+    <!-- Import -->
+    <div class="settings-section">
+      <div class="settings-section-title">📂 Import</div>
+      <p class="settings-desc">Restore from a previous backup. You can choose to <strong>merge</strong> (keep existing + add new) or <strong>replace</strong> (wipe and restore).</p>
+      <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="handleImport(event)">
+      <button class="btn-ghost" onclick="document.getElementById('importFileInput').click()" style="margin-top:0.8rem;width:100%;">📂 Choose Backup File</button>
+    </div>
+
+    <!-- Danger zone -->
+    <div class="settings-section settings-danger">
+      <div class="settings-section-title" style="color:var(--bark);">⚠ Danger Zone</div>
+      <p class="settings-desc">Permanently deletes all journal entries, letters, medicines, and water data from this browser. Export first!</p>
+      <button class="btn-danger" onclick="clearAllData()" style="margin-top:0.8rem;width:100%;">🗑 Clear All Data</button>
+    </div>
+
+  </div>
+</div>
+
 <div class="app">
 
   <!-- HEADER -->
