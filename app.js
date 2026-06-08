@@ -620,15 +620,18 @@ function saveEntry(){
   entries.unshift({
     date:new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}),
     prompt:document.getElementById('journalPrompt').textContent,
-    text, mood, tags:[...currentTags], ts:Date.now()
+    text, mood, tags:[...currentTags],
+    photo: currentPhoto || null,
+    ts:Date.now()
   });
   persistEntries();
   try{ localStorage.removeItem(LS.DRAFT); }catch(e){}
   updateStats(prevStreak);
-  // Clear tags after save
+  // Clear tags + photo after save
   currentTags = [];
   renderCurrentTags();
   document.getElementById('tagInput').value = '';
+  clearPhotoState();
   toast('🌿 Entry saved to your Scriptures!');
 }
 
@@ -637,6 +640,7 @@ function clearJournal(){
   document.getElementById('journalText').value='';
   countWords('journalText','jwc');
   try{ localStorage.removeItem(LS.DRAFT); }catch(e){}
+  clearPhotoState();
 }
 
 function downloadJournal(){
@@ -674,8 +678,14 @@ function renderArchive(list){
     const tagsHTML = (e.tags||[]).length
       ? `<div class="arch-entry-tags">${(e.tags||[]).map(t=>`<span class="arch-tag">#${t}</span>`).join('')}</div>`
       : '';
+    const photoHTML = e.photo
+      ? `<img class="arch-photo" src="${e.photo}" alt="Entry photo"
+           onclick="viewPhotoModal('${e.photo.substring(0,30)}',event)"
+           title="View photo">`
+      : '';
     return `
     <div class="arch-entry" style="display:flex;align-items:flex-start;gap:0.8rem;">
+      ${photoHTML}
       <div style="flex:1;min-width:0;cursor:pointer;" onclick="loadEntry(${realIdx})">
         <div class="arch-date">${e.mood||'🌿'} &nbsp;${e.date}</div>
         <div class="arch-preview">${preview}${e.text.length>120?'…':''}</div>
@@ -709,8 +719,105 @@ function loadEntry(i){
   // Restore tags
   currentTags = [...(e.tags||[])];
   renderCurrentTags();
+  // Restore photo
+  currentPhoto = e.photo || null;
+  renderPhotoPreview();
   switchTab('journal');
   toast('📖 Entry loaded');
+}
+
+// ═══════════════════════════════════════
+// PHOTO PER ENTRY
+// ═══════════════════════════════════════
+let currentPhoto = null;
+
+async function handlePhotoSelect(e){
+  const file = e.target.files[0];
+  e.target.value = ''; // reset so same file can be reselected
+  if(!file) return;
+
+  // Validate it's an image
+  if(!file.type.startsWith('image/')){
+    toast('⚠️ Please select an image file.');
+    return;
+  }
+
+  toast('📷 Processing photo…');
+  try{
+    currentPhoto = await compressPhoto(file);
+    renderPhotoPreview();
+    // Rough size check — warn if getting large
+    const kb = Math.round(currentPhoto.length * 0.75 / 1024);
+    if(kb > 300) toast(`📷 Photo added (${kb}KB) — save often to back up!`);
+    else         toast(`📷 Photo added (${kb}KB)`);
+  }catch(err){
+    toast('⚠️ Could not process photo.');
+    console.error(err);
+  }
+}
+
+function compressPhoto(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = ev => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const MAX = 800;
+        let w = img.width, h = img.height;
+        // Scale down so longest side ≤ MAX
+        if(w > h){ if(w > MAX){ h = Math.round(h*MAX/w); w = MAX; } }
+        else       { if(h > MAX){ w = Math.round(w*MAX/h); h = MAX; } }
+
+        const canvas = document.createElement('canvas');
+        canvas.width  = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.60));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderPhotoPreview(){
+  const wrap    = document.getElementById('photoPreviewWrap');
+  const thumb   = document.getElementById('photoThumb');
+  const addBtn  = document.getElementById('photoAddBtn');
+  if(!wrap) return;
+  if(currentPhoto){
+    thumb.src           = currentPhoto;
+    wrap.style.display  = 'flex';
+    addBtn.style.display= 'none';
+    // Click thumbnail to view full size
+    thumb.onclick = () => viewPhotoModal(currentPhoto);
+  } else {
+    wrap.style.display  = 'none';
+    addBtn.style.display= 'inline-flex';
+  }
+}
+
+function clearPhotoState(){
+  currentPhoto = null;
+  renderPhotoPreview();
+  const input = document.getElementById('photoInput');
+  if(input) input.value = '';
+}
+
+function removePhoto(){
+  if(!confirm('Remove this photo from the entry?')) return;
+  clearPhotoState();
+}
+
+function viewPhotoModal(src, event){
+  if(event) event.stopPropagation();
+  document.getElementById('previewContent').innerHTML = `
+    <img src="${src}" style="width:100%;border-radius:1px;display:block;"
+         alt="Entry photo">
+  `;
+  document.getElementById('previewModal').classList.add('open');
 }
 
 // ═══════════════════════════════════════
@@ -954,11 +1061,16 @@ function randomMemory(){
     `<p style="margin-bottom:0.75rem;line-height:1.85;">${l||'&nbsp;'}</p>`
   ).join('');
 
+  const photoHTML = e.photo
+    ? `<img src="${e.photo}" class="modal-photo" alt="Entry photo">`
+    : '';
+
   document.getElementById('previewContent').innerHTML=`
     <div style="font-family:'Dancing Script',cursive;color:var(--gold);font-size:0.82rem;margin-bottom:0.3rem;letter-spacing:0.04em;">🎲 Random Memory</div>
     <div style="font-family:'Dancing Script',cursive;color:var(--bark-light);font-size:0.88rem;margin-bottom:1.4rem;opacity:0.8;">
       ${e.mood||'🌿'} &nbsp;${e.date}
     </div>
+    ${photoHTML}
     ${e.prompt?`<div style="font-family:'Lora',serif;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-light);margin-bottom:1.2rem;font-style:italic;border-left:2px solid var(--forest-pale);padding-left:0.7rem;">${e.prompt}</div>`:''}
     <div style="font-family:'Lora',serif;font-size:0.95rem;color:var(--ink);">${bodyHTML}</div>
     <div style="display:flex;gap:0.65rem;margin-top:1.8rem;flex-wrap:wrap;">
