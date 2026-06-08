@@ -190,6 +190,7 @@ const LS = {
   WATER_HIST: 'langoor-water-hist',
   MEDS:       'langoor-meds',
   MEDS_LOG:   'langoor-meds-log',
+  RECAP:      'langoor-recap-seen',
 };
 
 function persistEntries(){
@@ -232,6 +233,7 @@ function init(){
   try{ entries=JSON.parse(localStorage.getItem(LS.ENTRIES)||'[]'); }catch(e){ entries=[]; }
   updateStats();
   checkOnThisDay();
+  checkWeeklyRecap();
 
   // ── Restore in-progress journal draft ──
   const savedDraft = localStorage.getItem(LS.DRAFT)||'';
@@ -1503,6 +1505,103 @@ function renderMeds(){
         </div>
       </div>`;
     }).join('')}`;
+}
+
+// ═══════════════════════════════════════
+// WEEKLY RECAP
+// ═══════════════════════════════════════
+function getWeekId(){
+  const d = new Date();
+  const startOfYear = new Date(d.getFullYear(), 0, 1);
+  const weekNum = Math.ceil((((d - startOfYear) / 86400000) + startOfYear.getDay() + 1) / 7);
+  return `${d.getFullYear()}-W${String(weekNum).padStart(2,'0')}`;
+}
+
+function checkWeeklyRecap(){
+  const card = document.getElementById('weeklyRecap');
+  // Don't show if already dismissed this week
+  if(localStorage.getItem(LS.RECAP) === getWeekId()){ card.style.display='none'; return; }
+
+  const stats = calcWeeklyStats();
+  if(!stats){ card.style.display='none'; return; }
+
+  renderWeeklyRecap(stats);
+  card.style.display='block';
+}
+
+function calcWeeklyStats(){
+  const now     = Date.now();
+  const weekAgo = now - 7*24*60*60*1000;
+  const week    = entries.filter(e => e.ts >= weekAgo);
+  if(!week.length) return null;
+
+  // Date range label
+  const oldest = new Date(Math.min(...week.map(e=>e.ts)));
+  const newest = new Date(Math.max(...week.map(e=>e.ts)));
+  const fmt    = d => d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  const range  = oldest.toDateString()===newest.toDateString()
+    ? fmt(oldest)
+    : `${fmt(oldest)} – ${fmt(newest)}`;
+
+  // Unique days
+  const days = new Set(week.map(e=>dayKey(e.ts))).size;
+
+  // Top mood
+  const moodCount = {};
+  week.forEach(e=>{ if(e.mood) moodCount[e.mood]=(moodCount[e.mood]||0)+1; });
+  const topMood = Object.entries(moodCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || '🌿';
+
+  // Top 5 words
+  const freq = {};
+  week.forEach(e=>{
+    (e.text||'').toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).forEach(w=>{
+      if(w.length>3 && !STOP_WORDS.has(w)) freq[w]=(freq[w]||0)+1;
+    });
+  });
+  const topWords = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([w])=>w);
+
+  // Random highlight sentence from this week
+  const allText  = week.map(e=>e.text).join(' ');
+  const sentences= allText.match(/[^.!?\n]{20,}[.!?]/g)||[];
+  const highlight= sentences.length
+    ? sentences[Math.floor(Math.random()*Math.min(sentences.length,8))].trim()
+    : week[0]?.text.slice(0,120);
+
+  return { count:week.length, days, topMood, topWords, highlight, range };
+}
+
+function renderWeeklyRecap(s){
+  document.getElementById('recapRange').textContent  = s.range;
+
+  document.getElementById('recapStats').innerHTML = `
+    <div class="recap-stat">
+      <span class="recap-stat-num">${s.count}</span>
+      <span class="recap-stat-lbl">${s.count===1?'entry':'entries'}</span>
+    </div>
+    <div class="recap-stat">
+      <span class="recap-stat-num">${s.days}/7</span>
+      <span class="recap-stat-lbl">days written</span>
+    </div>
+    <div class="recap-stat">
+      <span class="recap-stat-num">${s.topMood}</span>
+      <span class="recap-stat-lbl">top mood</span>
+    </div>`;
+
+  document.getElementById('recapHighlight').textContent = s.highlight
+    ? `"${s.highlight.trim()}"`
+    : '';
+
+  document.getElementById('recapWords').innerHTML = s.topWords.length
+    ? s.topWords.map(w=>`<span class="recap-word">#${w}</span>`).join('')
+    : '';
+}
+
+function dismissRecap(){
+  try{ localStorage.setItem(LS.RECAP, getWeekId()); }catch(e){}
+  const card = document.getElementById('weeklyRecap');
+  card.style.opacity='0';
+  card.style.transition='opacity 0.4s ease';
+  setTimeout(()=>{ card.style.display='none'; card.style.opacity=''; card.style.transition=''; },400);
 }
 
 // ═══════════════════════════════════════
