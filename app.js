@@ -509,7 +509,7 @@ function switchTab(name){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('section-'+name).classList.add('active');
   document.getElementById('tnav-'+name).classList.add('active');
-  if(name==='archive') renderArchive();
+  if(name==='archive') filterArchive();
   if(name==='water')   renderWater();
   if(name==='meds')    renderMeds();
 }
@@ -616,11 +616,15 @@ function saveEntry(){
   entries.unshift({
     date:new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}),
     prompt:document.getElementById('journalPrompt').textContent,
-    text, mood, ts:Date.now()
+    text, mood, tags:[...currentTags], ts:Date.now()
   });
   persistEntries();
   try{ localStorage.removeItem(LS.DRAFT); }catch(e){}
   updateStats(prevStreak);
+  // Clear tags after save
+  currentTags = [];
+  renderCurrentTags();
+  document.getElementById('tagInput').value = '';
   toast('🌿 Entry saved to your Scriptures!');
 }
 
@@ -643,24 +647,44 @@ function downloadJournal(){
 // ═══════════════════════════════════════
 // ARCHIVE
 // ═══════════════════════════════════════
-function renderArchive(){
-  const list=document.getElementById('archiveList');
+let activeTagFilters = new Set();
+
+function renderArchive(list){
+  const pool = list || entries;
+  const el   = document.getElementById('archiveList');
+
   if(!entries.length){
-    list.innerHTML='<div class="empty-state">Your entries will gather here, like leaves in a favourite tree.<br><br>Save your first page to begin. 🌴</div>';
-    return;
+    el.innerHTML='<div class="empty-state">Your entries will gather here, like leaves in a favourite tree.<br><br>Save your first page to begin. 🌴</div>';
+    renderTagFilters(); return;
   }
-  list.innerHTML=entries.map((e,i)=>`
+  if(!pool.length){
+    el.innerHTML='<div class="empty-state" style="padding:1.5rem;">No entries match your search. 🔍</div>';
+    renderTagFilters(); return;
+  }
+
+  const q = (document.getElementById('searchInput')?.value||'').trim().toLowerCase();
+
+  el.innerHTML = pool.map((e,i)=>{
+    const realIdx = entries.indexOf(e);
+    const preview = q ? highlightText(e.text.slice(0,120), q) : e.text.slice(0,120);
+    const tagsHTML = (e.tags||[]).length
+      ? `<div class="arch-entry-tags">${(e.tags||[]).map(t=>`<span class="arch-tag">#${t}</span>`).join('')}</div>`
+      : '';
+    return `
     <div class="arch-entry" style="display:flex;align-items:flex-start;gap:0.8rem;">
-      <div style="flex:1;min-width:0;" onclick="loadEntry(${i})" style="cursor:pointer;">
+      <div style="flex:1;min-width:0;cursor:pointer;" onclick="loadEntry(${realIdx})">
         <div class="arch-date">${e.mood||'🌿'} &nbsp;${e.date}</div>
-        <div class="arch-preview">${e.text}</div>
+        <div class="arch-preview">${preview}${e.text.length>120?'…':''}</div>
+        ${tagsHTML}
       </div>
-      <button onclick="deleteEntry(event,${i})" title="Delete entry"
+      <button onclick="deleteEntry(event,${realIdx})" title="Delete"
         style="background:none;border:none;cursor:pointer;color:var(--bark-light);opacity:0.4;
                font-size:1rem;padding:0.2rem 0.3rem;flex-shrink:0;transition:opacity 0.2s;margin-top:0.1rem;"
         onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.4'">✕</button>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
+
+  renderTagFilters();
 }
 
 function deleteEntry(event,i){
@@ -669,7 +693,7 @@ function deleteEntry(event,i){
   entries.splice(i,1);
   persistEntries();
   updateStats();
-  renderArchive();
+  filterArchive();
   toast('🍂 Entry removed.');
 }
 
@@ -678,8 +702,128 @@ function loadEntry(i){
   document.getElementById('journalPrompt').textContent=e.prompt;
   document.getElementById('journalText').value=e.text;
   countWords('journalText','jwc');
+  // Restore tags
+  currentTags = [...(e.tags||[])];
+  renderCurrentTags();
   switchTab('journal');
   toast('📖 Entry loaded');
+}
+
+// ═══════════════════════════════════════
+// TAG INPUT
+// ═══════════════════════════════════════
+let currentTags = [];
+
+function handleTagKey(e){
+  if(e.key === 'Enter' || e.key === ','){
+    e.preventDefault();
+    const raw = e.target.value.trim().replace(/^#/, '').replace(/,/g,'').toLowerCase();
+    if(raw) addTag(raw);
+    e.target.value = '';
+  }
+}
+
+function addTag(raw){
+  const tag = raw.trim().toLowerCase().replace(/[^a-z0-9\-_]/g,'');
+  if(!tag || currentTags.includes(tag) || currentTags.length >= 8) return;
+  currentTags.push(tag);
+  renderCurrentTags();
+}
+
+function removeTagFromInput(idx){
+  currentTags.splice(idx, 1);
+  renderCurrentTags();
+}
+
+function renderCurrentTags(){
+  const el = document.getElementById('currentTagPills');
+  if(!el) return;
+  el.innerHTML = currentTags.map((t,i)=>
+    `<span class="tag-pill">#${t}<button class="tag-pill-remove" onclick="removeTagFromInput(${i})">✕</button></span>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════
+// SEARCH & TAG FILTER
+// ═══════════════════════════════════════
+function filterArchive(){
+  const q    = document.getElementById('searchInput').value.trim().toLowerCase();
+  const clear = document.getElementById('searchClear');
+  const info  = document.getElementById('searchInfo');
+
+  clear.style.display = q ? 'block' : 'none';
+
+  let pool = entries;
+
+  // Filter by active tag filters (OR — entry must have at least one selected tag)
+  if(activeTagFilters.size){
+    pool = pool.filter(e =>
+      (e.tags||[]).some(t => activeTagFilters.has(t))
+    );
+  }
+
+  // Filter by search query
+  if(q){
+    pool = pool.filter(e =>
+      e.text.toLowerCase().includes(q)         ||
+      (e.prompt||'').toLowerCase().includes(q) ||
+      (e.tags||[]).some(t => t.includes(q))
+    );
+  }
+
+  // Show info bar
+  if(q || activeTagFilters.size){
+    info.style.display = 'block';
+    const tagNote = activeTagFilters.size ? ` · tags: ${[...activeTagFilters].map(t=>'#'+t).join(', ')}` : '';
+    info.textContent = `${pool.length} of ${entries.length} entries${q ? ` matching "${q}"` : ''}${tagNote}`;
+  } else {
+    info.style.display = 'none';
+  }
+
+  renderArchive(pool.length < entries.length ? pool : undefined);
+}
+
+function clearSearch(){
+  document.getElementById('searchInput').value = '';
+  activeTagFilters.clear();
+  document.getElementById('searchClear').style.display = 'none';
+  document.getElementById('searchInfo').style.display  = 'none';
+  renderTagFilters();
+  renderArchive();
+}
+
+function highlightText(text, q){
+  if(!q) return text;
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return text.replace(new RegExp(escaped,'gi'),
+    m=>`<mark style="background:rgba(192,144,48,0.3);border-radius:2px;padding:0 1px;">${m}</mark>`
+  );
+}
+
+function getUniqueTags(){
+  const all = new Set();
+  entries.forEach(e => (e.tags||[]).forEach(t => all.add(t)));
+  return [...all].sort();
+}
+
+function renderTagFilters(){
+  const wrap = document.getElementById('tagFilterWrap');
+  if(!wrap) return;
+  const tags = getUniqueTags();
+  if(!tags.length){ wrap.innerHTML=''; return; }
+
+  wrap.innerHTML = tags.map(t=>`
+    <button class="tag-filter-pill ${activeTagFilters.has(t)?'active':''}"
+      onclick="toggleTagFilter('${t}')">
+      #${t}
+    </button>`
+  ).join('');
+}
+
+function toggleTagFilter(tag){
+  if(activeTagFilters.has(tag)) activeTagFilters.delete(tag);
+  else activeTagFilters.add(tag);
+  filterArchive();
 }
 
 // ═══════════════════════════════════════
