@@ -102,6 +102,23 @@
         <p class="dq-author" id="dqAuthor"></p>
       </div>
 
+      <!-- Weekly Recap Card -->
+      <div id="weeklyRecap" class="weekly-recap" style="display:none;">
+        <div class="recap-top">
+          <div>
+            <div class="recap-title">📖 Your week in words</div>
+            <div class="recap-range" id="recapRange"></div>
+          </div>
+          <button class="recap-dismiss-x" onclick="dismissRecap()" title="Dismiss">✕</button>
+        </div>
+        <div class="recap-stats" id="recapStats"></div>
+        <div class="recap-highlight" id="recapHighlight"></div>
+        <div class="recap-words" id="recapWords"></div>
+        <button class="recap-dismiss-btn" onclick="dismissRecap()">
+          See you next week 🌿
+        </button>
+      </div>
+
       <!-- On This Day -->
       <div id="otdCard" class="otd-card" style="display:none;" onclick="otdClick()">
         <div class="otd-header">📅 On this day</div>
