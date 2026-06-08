@@ -59,6 +59,27 @@
       <button class="btn-ghost" onclick="document.getElementById('importFileInput').click()" style="margin-top:0.8rem;width:100%;">📂 Choose Backup File</button>
     </div>
 
+    <!-- Notifications -->
+    <div class="settings-section">
+      <div class="settings-section-title">🔔 Notifications</div>
+      <div id="notifStatusBar" class="notif-status-bar"></div>
+      <button id="notifPermBtn" class="btn-ghost"
+        onclick="requestNotifPermission()"
+        style="margin-top:0.8rem;width:100%;display:none;">
+        🔔 Request Notification Permission
+      </button>
+      <div class="notif-toggle-row" style="margin-top:0.9rem;">
+        <div>
+          <span style="font-family:'Lora',serif;font-size:0.85rem;color:var(--ink);">Master switch</span>
+          <p class="settings-desc" style="margin-top:0.1rem;">Enables all reminders below</p>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="masterNotifToggle" onchange="setMasterNotif(this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
     <!-- Danger zone -->
     <div class="settings-section settings-danger">
       <div class="settings-section-title" style="color:var(--bark);">⚠ Danger Zone</div>
@@ -383,6 +404,34 @@
           <div class="water-hist-row" id="waterHistRow"></div>
         </div>
 
+        <!-- Water reminders -->
+        <div class="notif-card" style="margin-top:1rem;">
+          <div class="notif-card-row">
+            <div>
+              <span class="notif-card-title">🔔 Water reminders</span>
+              <span class="notif-card-sub">Nudge me to stay hydrated</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="waterNotifToggle" onchange="setWaterNotif(this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div id="waterNotifOptions" style="display:none;margin-top:0.8rem;">
+            <div class="notif-option-row">
+              <span class="notif-option-lbl">Every</span>
+              <select class="notif-select" id="waterInterval" onchange="updateWaterNotifSettings()">
+                <option value="1">1 hour</option>
+                <option value="2">2 hours</option>
+                <option value="3">3 hours</option>
+              </select>
+              <span class="notif-option-lbl">from</span>
+              <select class="notif-select" id="waterFromHour" onchange="updateWaterNotifSettings()"></select>
+              <span class="notif-option-lbl">to</span>
+              <select class="notif-select" id="waterToHour" onchange="updateWaterNotifSettings()"></select>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -390,6 +439,20 @@
     <section class="section" id="section-meds">
       <p class="s-title">💊 Medicines</p>
       <p class="s-desc">Never miss a dose — your daily checklist, always ready.</p>
+
+      <!-- Med reminders -->
+      <div class="notif-card" style="margin-bottom:0.9rem;">
+        <div class="notif-card-row">
+          <div>
+            <span class="notif-card-title">🔔 Medicine reminders</span>
+            <span class="notif-card-sub">🌅 8am · ☀️ 1pm · 🌆 6pm · 🌙 9pm</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="medNotifToggle" onchange="setMedNotif(this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
 
       <!-- Add medicine form -->
       <div class="med-add-wrap">
