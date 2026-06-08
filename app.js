@@ -191,6 +191,7 @@ const LS = {
   MEDS:       'langoor-meds',
   MEDS_LOG:   'langoor-meds-log',
   RECAP:      'langoor-recap-seen',
+  NOTIF:      'langoor-notif',
 };
 
 function persistEntries(){
@@ -262,6 +263,7 @@ function init(){
   loadLetterDrafts();
   loadWater();
   loadMeds();
+  loadNotifSettings();
 
   // ── Auto-save listeners ──
   document.getElementById('journalText').addEventListener('input', ()=>{ countWords('journalText','jwc'); persistDraft(); });
@@ -1431,6 +1433,7 @@ function toggleMedTaken(medId, timeIdx){
   medsLog.taken[key] = !medsLog.taken[key];
   saveMedsLog();
   renderMeds();
+  scheduleAllNotifications(); // reschedule so taken doses don't fire
   // Celebrate if all doses done for that med
   const med = meds.find(m=>m.id===medId);
   if(med && med.times.every((_,i)=>medsLog.taken[`${medId}_${i}`])){
@@ -1505,6 +1508,208 @@ function renderMeds(){
         </div>
       </div>`;
     }).join('')}`;
+}
+
+// ═══════════════════════════════════════
+// NOTIFICATIONS
+// ═══════════════════════════════════════
+const MED_HOURS = { Morning:8, Afternoon:13, Evening:18, Night:21 };
+
+let notifSettings = {
+  masterEnabled: false,
+  water: { enabled:false, intervalHours:2, fromHour:8, toHour:22 },
+  meds:  { enabled:false },
+};
+let scheduledTimers = [];
+
+function loadNotifSettings(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(LS.NOTIF)||'{}');
+    notifSettings = {
+      masterEnabled: saved.masterEnabled || false,
+      water: { enabled:false, intervalHours:2, fromHour:8, toHour:22, ...saved.water },
+      meds:  { enabled:false, ...saved.meds },
+    };
+  }catch(e){}
+  renderNotifUI();
+  scheduleAllNotifications();
+}
+
+function saveNotifSettings(){
+  try{ localStorage.setItem(LS.NOTIF, JSON.stringify(notifSettings)); }catch(e){}
+  scheduleAllNotifications();
+  renderNotifUI();
+}
+
+// ── Permission ───────────────────────────────────────────────
+async function requestNotifPermission(){
+  if(!('Notification' in window)){ toast('⚠️ Notifications not supported on this browser.'); return; }
+  const result = await Notification.requestPermission();
+  renderNotifUI();
+  if(result === 'granted'){
+    notifSettings.masterEnabled = true;
+    saveNotifSettings();
+    toast('🔔 Notifications enabled!');
+  } else {
+    toast('⚠️ Permission denied — check browser/OS settings.');
+  }
+}
+
+// ── Toggle functions ────────────────────────────────────────
+function setMasterNotif(val){
+  notifSettings.masterEnabled = val;
+  saveNotifSettings();
+}
+function setWaterNotif(val){
+  notifSettings.water.enabled = val;
+  saveNotifSettings();
+}
+function setMedNotif(val){
+  notifSettings.meds.enabled = val;
+  saveNotifSettings();
+}
+function updateWaterNotifSettings(){
+  const iv   = document.getElementById('waterInterval');
+  const from = document.getElementById('waterFromHour');
+  const to   = document.getElementById('waterToHour');
+  if(iv)   notifSettings.water.intervalHours = +iv.value;
+  if(from) notifSettings.water.fromHour      = +from.value;
+  if(to)   notifSettings.water.toHour        = +to.value;
+  saveNotifSettings();
+}
+
+// ── Render UI ───────────────────────────────────────────────
+function hourOpts(selected){
+  const labels=['12am','1am','2am','3am','4am','5am','6am','7am','8am',
+                '9am','10am','11am','12pm','1pm','2pm','3pm','4pm',
+                '5pm','6pm','7pm','8pm','9pm','10pm','11pm'];
+  return labels.map((l,i)=>`<option value="${i}"${i===selected?' selected':''}>${l}</option>`).join('');
+}
+
+function renderNotifUI(){
+  const perm       = ('Notification' in window) ? Notification.permission : 'denied';
+  const canEnable  = perm === 'granted';
+  const { masterEnabled, water, meds } = notifSettings;
+
+  // Status bar
+  const sb = document.getElementById('notifStatusBar');
+  if(sb){
+    const map = {
+      granted: '✅ Permission granted — reminders will fire as scheduled.',
+      denied:  '🚫 Blocked. Go to browser Settings → Site settings → Notifications to allow.',
+      default: '⚪ Not yet granted — tap the button below to enable.',
+    };
+    sb.textContent  = map[perm]||'';
+    sb.className    = `notif-status-bar notif-status-${perm}`;
+  }
+
+  // Permission button visibility
+  const pb = document.getElementById('notifPermBtn');
+  if(pb) pb.style.display = canEnable ? 'none' : 'block';
+
+  // Master toggle
+  const mt = document.getElementById('masterNotifToggle');
+  if(mt){ mt.checked=masterEnabled&&canEnable; mt.disabled=!canEnable; }
+
+  // Water toggle + options
+  const wt = document.getElementById('waterNotifToggle');
+  if(wt){ wt.checked=water.enabled; wt.disabled=!masterEnabled||!canEnable; }
+
+  const wo = document.getElementById('waterNotifOptions');
+  if(wo) wo.style.display = water.enabled ? 'block' : 'none';
+
+  // Populate hour selects
+  const fromEl = document.getElementById('waterFromHour');
+  const toEl   = document.getElementById('waterToHour');
+  const intEl  = document.getElementById('waterInterval');
+  if(fromEl) fromEl.innerHTML = hourOpts(water.fromHour);
+  if(toEl)   toEl.innerHTML   = hourOpts(water.toHour);
+  if(intEl)  intEl.value      = water.intervalHours;
+
+  // Med toggle
+  const mdt = document.getElementById('medNotifToggle');
+  if(mdt){ mdt.checked=meds.enabled; mdt.disabled=!masterEnabled||!canEnable; }
+}
+
+// ── Scheduling ──────────────────────────────────────────────
+function scheduleAllNotifications(){
+  scheduledTimers.forEach(id=>clearTimeout(id));
+  scheduledTimers=[];
+
+  const perm = ('Notification' in window) ? Notification.permission : 'denied';
+  if(!notifSettings.masterEnabled || perm !== 'granted') return;
+
+  const now = new Date();
+  if(notifSettings.water.enabled) scheduleWaterNotifs(now);
+  if(notifSettings.meds.enabled)  scheduleMedNotifs(now);
+}
+
+function scheduleWaterNotifs(now){
+  const { intervalHours, fromHour, toHour } = notifSettings.water;
+  const h = now.getHours(), m = now.getMinutes();
+
+  for(let slot=fromHour; slot<=toHour; slot+=intervalHours){
+    if(slot < h || (slot===h && m >= 2)) continue; // skip past times
+    const target = new Date(now);
+    target.setHours(slot, 0, 0, 0);
+    const delay = target - now;
+    if(delay > 0){
+      const id = setTimeout(()=>{
+        const { count, goal } = waterData;
+        const left = goal - count;
+        fireNotif(
+          '💧 Water time!',
+          left > 0
+            ? `You've had ${count} of ${goal} glasses. ${left} more to go!`
+            : `Water goal crushed today! 🎉 Keep it up.`,
+          'water'
+        );
+      }, delay);
+      scheduledTimers.push(id);
+    }
+  }
+}
+
+function scheduleMedNotifs(now){
+  const h = now.getHours(), m = now.getMinutes();
+  meds.forEach(med=>{
+    med.times.forEach((slot, idx)=>{
+      const targetH = MED_HOURS[slot];
+      if(targetH === undefined) return;
+      if(targetH < h || (targetH===h && m >= 2)) return;
+      if(medsLog.taken[`${med.id}_${idx}`]) return;
+
+      const target = new Date(now);
+      target.setHours(targetH, 0, 0, 0);
+      const delay = target - now;
+      if(delay > 0){
+        const id = setTimeout(()=>{
+          if(medsLog.taken[`${med.id}_${idx}`]) return; // already taken
+          fireNotif(
+            `💊 ${med.name}`,
+            `${slot} dose${med.dose?` (${med.dose})`:''}${med.notes?` — ${med.notes}`:''}`,
+            `med-${med.id}-${idx}`
+          );
+        }, delay);
+        scheduledTimers.push(id);
+      }
+    });
+  });
+}
+
+async function fireNotif(title, body, tag){
+  if(Notification.permission !== 'granted') return;
+  try{
+    const reg = await navigator.serviceWorker.ready;
+    await reg.showNotification(title, {
+      body, tag, renotify:true,
+      icon:   '/assets/logo-192.png',
+      badge:  '/assets/logo-64.png',
+      vibrate:[200,100,200],
+    });
+  }catch(e){
+    try{ new Notification(title,{body,icon:'/assets/logo-192.png'}); }catch(_){}
+  }
 }
 
 // ═══════════════════════════════════════
