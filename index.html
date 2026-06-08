@@ -210,6 +210,21 @@
           <div class="current-tag-pills" id="currentTagPills"></div>
         </div>
 
+        <!-- Photo attachment -->
+        <input type="file" id="photoInput" accept="image/*"
+          style="display:none" onchange="handlePhotoSelect(event)">
+
+        <div class="photo-row">
+          <button class="photo-add-btn" id="photoAddBtn"
+            onclick="document.getElementById('photoInput').click()">
+            📷 Add photo
+          </button>
+          <div class="photo-preview-wrap" id="photoPreviewWrap" style="display:none;">
+            <img class="photo-thumb" id="photoThumb" alt="Entry photo">
+            <button class="photo-remove-btn" onclick="removePhoto()" title="Remove photo">✕</button>
+          </div>
+        </div>
+
         <div class="btn-row">
           <button class="btn-primary" onclick="saveEntry()">Save to Scriptures</button>
           <button class="btn-ghost" onclick="clearJournal()">Clear</button>
