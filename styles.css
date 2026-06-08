@@ -1181,3 +1181,93 @@ html[data-season="summer"] .float-leaf{ filter:saturate(0.6) opacity(0.22); }
   background:rgba(46,94,48,0.08);color:var(--forest);
   border:1px solid rgba(46,94,48,0.15);
 }
+
+/* ——— WEEKLY RECAP CARD ——— */
+.weekly-recap{
+  background:linear-gradient(135deg,rgba(46,94,48,0.09),rgba(46,94,48,0.04));
+  border:1px solid rgba(46,94,48,0.22);
+  border-left:4px solid var(--forest);
+  border-radius:1px;
+  padding:1.3rem 1.5rem 1.1rem;
+  margin-bottom:1.5rem;
+  animation:sectionIn 0.45s ease;
+  position:relative;
+}
+.recap-top{
+  display:flex;justify-content:space-between;
+  align-items:flex-start;margin-bottom:0.9rem;
+}
+.recap-title{
+  font-family:'Playfair Display',serif;
+  font-size:1rem;color:var(--ink);font-style:italic;
+}
+.recap-range{
+  font-family:'Dancing Script',cursive;
+  font-size:0.82rem;color:var(--forest-mid);
+  margin-top:0.1rem;opacity:0.8;
+}
+.recap-dismiss-x{
+  background:none;border:none;cursor:pointer;
+  color:var(--ink-light);opacity:0.4;font-size:1rem;
+  padding:0;line-height:1;transition:opacity 0.2s;
+  flex-shrink:0;margin-left:0.5rem;
+}
+.recap-dismiss-x:hover{opacity:1;}
+
+/* Stats row */
+.recap-stats{
+  display:flex;gap:0;
+  background:rgba(46,94,48,0.06);
+  border-radius:1px;margin-bottom:1rem;
+  overflow:hidden;
+}
+.recap-stat{
+  flex:1;padding:0.6rem 0.8rem;
+  text-align:center;
+  border-right:1px solid rgba(46,94,48,0.12);
+}
+.recap-stat:last-child{border-right:none;}
+.recap-stat-num{
+  font-family:'Playfair Display',serif;
+  font-size:1.4rem;font-weight:600;
+  color:var(--forest);display:block;line-height:1;
+}
+.recap-stat-lbl{
+  font-family:'Dancing Script',cursive;
+  font-size:0.7rem;color:var(--ink-light);
+  display:block;margin-top:0.2rem;
+}
+
+/* Highlight quote */
+.recap-highlight{
+  font-family:'Lora',serif;font-style:italic;
+  font-size:0.88rem;color:var(--ink);
+  line-height:1.65;
+  border-left:2px solid var(--gold-light);
+  padding-left:0.8rem;margin-bottom:0.9rem;
+  opacity:0.85;
+}
+.recap-highlight:empty{display:none;}
+
+/* Top words */
+.recap-words{
+  display:flex;flex-wrap:wrap;gap:0.3rem;
+  margin-bottom:1rem;
+}
+.recap-word{
+  font-family:'Lora',serif;font-size:0.72rem;
+  padding:0.15rem 0.55rem;border-radius:20px;
+  background:rgba(46,94,48,0.1);
+  border:1px solid rgba(46,94,48,0.18);
+  color:var(--forest);
+}
+
+/* Dismiss */
+.recap-dismiss-btn{
+  background:none;border:none;cursor:pointer;
+  font-family:'Dancing Script',cursive;font-size:0.9rem;
+  color:var(--ink-light);opacity:0.55;
+  display:block;width:100%;text-align:right;
+  padding:0;transition:opacity 0.2s;
+}
+.recap-dismiss-btn:hover{opacity:1;color:var(--forest);}
