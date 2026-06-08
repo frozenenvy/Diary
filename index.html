@@ -160,6 +160,18 @@
           placeholder="The langoor sits, ink-tipped finger poised... what will you write today?"></textarea>
         <div class="word-count" id="jwc">0 words</div>
 
+        <!-- Tag input -->
+        <div class="tag-input-wrap">
+          <div class="tag-input-row">
+            <span class="tag-prefix">🏷</span>
+            <input class="tag-text-input" id="tagInput"
+              placeholder="add tags — press Enter or comma"
+              maxlength="30"
+              onkeydown="handleTagKey(event)">
+          </div>
+          <div class="current-tag-pills" id="currentTagPills"></div>
+        </div>
+
         <div class="btn-row">
           <button class="btn-primary" onclick="saveEntry()">Save to Scriptures</button>
           <button class="btn-ghost" onclick="clearJournal()">Clear</button>
@@ -258,6 +270,20 @@
     <section class="section" id="section-archive">
       <p class="s-title">The Archive Tree</p>
       <p class="s-desc">Every entry, tucked safely in the branches. Tap one to read it again.</p>
+
+      <!-- Search bar -->
+      <div class="archive-search-wrap">
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" id="searchInput"
+            placeholder="Search entries, prompts, tags..."
+            oninput="filterArchive()">
+          <button class="search-clear" id="searchClear"
+            onclick="clearSearch()" style="display:none;">✕</button>
+        </div>
+        <div class="tag-filter-wrap" id="tagFilterWrap"></div>
+        <div class="search-info" id="searchInfo" style="display:none;"></div>
+      </div>
 
       <!-- Mood Chart -->
       <div style="margin-bottom:0.6rem;">
